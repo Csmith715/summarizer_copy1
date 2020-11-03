@@ -7,7 +7,7 @@ application = flask.Flask(__name__)
 
 def load_summarizer():
     global summarizer
-    summarizer = pipeline('summarization', model='facebook/bart-large-cnn', tokenizer='facebook/bart-large-cnn')
+    summarizer = pipeline('summarization', model='sshleifer/distilbart-cnn-12-6', tokenizer='sshleifer/distilbart-cnn-12-6')
 
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
@@ -19,7 +19,7 @@ def summarizer():
     intext = req_data['text']
     maxlen = req_data['max length']
 
-    sumtext = summarizer(intext, min_length=5, max_length=maxlen)
+    sumtext = summarizer(intext, min_length=5, max_length=maxlen, clean_up_tokenization_spaces = True)
     data['summarized text'] = sumtext[0]['summary_text']
 
     return flask.jsonify(data)
