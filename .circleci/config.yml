@@ -84,7 +84,7 @@ commands:
           release-name: << parameters.release >>
           values: .kube/<< parameters.release >>/values-<< parameters.aws-environment >>.yaml
           wait: true
-          timeout: 300s
+          timeout: 600s
           values-to-override: image.tag=${CIRCLE_SHA1}
 
 jobs:
