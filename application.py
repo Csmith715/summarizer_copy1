@@ -33,7 +33,7 @@ def summarizer():
 
     return flask.jsonify(data)
 
-@application.route('/updateCTA', methods=['GET'])
+@application.route('/summarizer/updateCTA', methods=['GET'])
 def updateCTA:
     s3 = boto3.resource('s3')
     s3.Bucket(BUCKET_NAME).download_file(KEY, 'campaign-metadata.json')
@@ -62,6 +62,7 @@ def updateCTA:
         pickle.dump(embedding_dict, fp)
 
     s3.upload_file('phraseology_embeddings.pkl', BUCKET_NAME, 'CTA_Bullets/phraseology_embeddings.pkl')
+    return flask.Response(response='done', status=200, mimetype='text/plain')
 
 
 @application.route('/healthz', methods=['GET'])
