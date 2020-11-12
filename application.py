@@ -9,10 +9,26 @@ import pickle
 import boto3
 import botocore
 
-BUCKET_NAME = 'contentware-nlp' 
-KEY = 'CTA_Bullets/campaign-metadata.json' 
+#BUCKET_NAME = 'contentware-nlp' 
+#KEY = 'CTA_Bullets/campaign-metadata.json' 
 
 application = flask.Flask(__name__)
+
+
+cta_root_path = os.getenv('CTA_ROOT_PATH', '/tmp')
+bucket_name = os.getenv('BUCKET_NAME', 'contentware-nlp')
+s3 = boto3.client('s3')
+
+cta_path = os.getenv('CTA_PATH', 'CTA_Bullets')
+
+def download_file(path, file):
+    target_dir = f'{cta_root_path}/{path}'
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir, exist_ok=True)
+
+    return s3.download_file(bucket_name, f'{path}/{file}', f'{target_dir}/{file}')
+
+
 
 def load_summarizer():
     global summarizer
@@ -34,12 +50,15 @@ def summarizer():
     return flask.jsonify(data)
 
 @application.route('/summarizer/updateCTA', methods=['GET'])
-def updateCTA:
-    s3 = boto3.resource('s3')
-    s3.Bucket(BUCKET_NAME).download_file(KEY, 'campaign-metadata.json')
+def updateCTA():
+    #s3 = boto3.resource('s3')
+    #s3.Bucket(BUCKET_NAME).download_file(KEY, 'campaign-metadata.json')
+    download_file(cta_path, 'campaign-metadata.json')
 
     # Load JSON CTA/Wrapper Info
-    with open('campaign-metadata.json') as f:
+    
+    #with open('campaign-metadata.json') as f:
+    with open(os.path.join(cta_root_path, 'campaign-metadata.json')) as f:
         rules = json.load(f)
 
     # Create a dictionary of dataframes for each CTA
@@ -61,7 +80,7 @@ def updateCTA:
     with open('phraseology_embeddings.pkl', 'wb') as fp:
         pickle.dump(embedding_dict, fp)
 
-    s3.upload_file('phraseology_embeddings.pkl', BUCKET_NAME, 'CTA_Bullets/phraseology_embeddings.pkl')
+    s3.upload_file('phraseology_embeddings.pkl', bucket_name, 'CTA_Bullets/phraseology_embeddings.pkl')
     return flask.Response(response='done', status=200, mimetype='text/plain')
 
 
