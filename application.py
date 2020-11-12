@@ -58,7 +58,7 @@ def updateCTA():
     # Load JSON CTA/Wrapper Info
     
     #with open('campaign-metadata.json') as f:
-    with open(os.path.join(cta_root_path, 'campaign-metadata.json')) as f:
+    with open(os.path.join(cta_root_path, cta_path, 'campaign-metadata.json')) as f:
         rules = json.load(f)
 
     # Create a dictionary of dataframes for each CTA
