@@ -80,7 +80,7 @@ def updateCTA():
     with open(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), 'wb') as fp:
         pickle.dump(embedding_dict, fp)
 
-    s3.upload_file('phraseology_embeddings.pkl', bucket_name, 'CTA_Bullets/phraseology_embeddings.pkl')
+    s3.upload_file(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), bucket_name, 'CTA_Bullets/phraseology_embeddings.pkl')
     return flask.Response(response='done', status=200, mimetype='text/plain')
 
 
