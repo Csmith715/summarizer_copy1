@@ -77,7 +77,7 @@ def updateCTA():
         embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in dict_of_dfs[d]['name']]
         embedding_dict[d] = embedding
 
-    with open('phraseology_embeddings.pkl', 'wb') as fp:
+    with open(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), 'wb') as fp:
         pickle.dump(embedding_dict, fp)
 
     s3.upload_file('phraseology_embeddings.pkl', bucket_name, 'CTA_Bullets/phraseology_embeddings.pkl')
