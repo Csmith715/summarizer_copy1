@@ -9,3 +9,4 @@ torchvision
 transformers==3.0.2
 sentence_transformers
 pandas
+nltk

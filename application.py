@@ -10,6 +10,11 @@ from itertools import product
 import boto3
 import botocore
 
+import nltk
+from nltk.corpus import stopwords
+
+stop_words = set(stopwords.words('english')) 
+
 #BUCKET_NAME = 'contentware-nlp' 
 #KEY = 'CTA_Bullets/campaign-metadata.json' 
 
