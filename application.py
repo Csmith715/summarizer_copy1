@@ -28,7 +28,13 @@ def download_file(path, file):
 
     return s3.download_file(bucket_name, f'{path}/{file}', f'{target_dir}/{file}')
 
-
+def purge_extra(rule_list):
+    outlist = []
+    for phrase in rule_list:
+        nlist = [j.lower() for j in phrase.split(' ') if j not in stop_words]
+        if len(nlist) == len(set(nlist)):
+            outlist.append(phrase)
+    return outlist
 
 def load_summarizer():
     global summarizer
@@ -69,6 +75,23 @@ def updateCTA():
             temp_df = temp_df.drop(['ctaId'], axis=1)
             dict_of_dfs[x['categoryName']] = temp_df
 
+    # Create a dictonary of bullet point wrapper rules
+    new_rule_dict = {}
+    for r in rules['bulletPoints']:
+        bp = r['beforePositions']
+        full_list = list(product(*bp))
+        joined_list = [' '.join(f)+' ' for f in full_list]
+        final_list = purge_extra(joined_list)
+        new_rule_dict[r['name']] = final_list
+
+    new_rule_dict['HWW_Rules'] = new_rule_dict['How, What, Why Rule #1'] + new_rule_dict['How, What, Why Rule #2'] + new_rule_dict['How, What, Why Rule #3']
+    new_rule_dict['Noun_Rules'] = new_rule_dict['Noun Rule #1'] + new_rule_dict['Noun Rule #2']
+    del new_rule_dict['How, What, Why Rule #1']
+    del new_rule_dict['How, What, Why Rule #2']
+    del new_rule_dict['How, What, Why Rule #3']
+    del new_rule_dict['Noun Rule #1']
+    del new_rule_dict['Noun Rule #2']
+
     # Create embedding dictionary for CTA's
     model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
 
@@ -80,7 +103,11 @@ def updateCTA():
     with open(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), 'wb') as fp:
         pickle.dump(embedding_dict, fp)
 
+    with open(os.path.join(cta_root_path, cta_path, 'bullet_rules.json'), 'w') as fp:
+        json.dump(new_rule_dict, fp)
+
     s3.upload_file(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), bucket_name, 'CTA_Bullets/phraseology_embeddings.pkl')
+    s3.upload_file(os.path.join(cta_root_path, cta_path, 'bullet_rules.json'), bucket_name, 'CTA_Bullets/bullet_rules.json')
     return flask.Response(response='done', status=200, mimetype='text/plain')
 
 
