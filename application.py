@@ -5,6 +5,7 @@ import pandas as pd
 import json
 from sentence_transformers import SentenceTransformer
 import pickle
+from itertools import product
 
 import boto3
 import botocore
