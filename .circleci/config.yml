@@ -1,8 +1,8 @@
 version: 2.1
 orbs:
-  aws-ecr: circleci/aws-ecr@6.13.0
-  aws-eks: circleci/aws-eks@1.0.2
-  helm: circleci/helm@1.0.0
+  aws-ecr: circleci/aws-ecr@6.15.2
+  aws-eks: circleci/aws-eks@1.0.3
+  helm: circleci/helm@1.1.2
 
 references:
   workspace_root: &workspace_root
@@ -131,7 +131,6 @@ jobs:
           aws-region: << parameters.aws-region >>
       - helm/install-helm-client:
           version: "v3.1.2"
-      - run: helm repo add stable https://kubernetes-charts.storage.googleapis.com/
       - upgrade-helm:
           release: summarizer
           namespace: << parameters.namespace >>
