@@ -1,5 +1,5 @@
 import flask
-from transformers import pipeline
+from transformers import pipeline, BartTokenizerFast
 import os
 import pandas as pd
 import json
@@ -27,6 +27,8 @@ s3 = boto3.client('s3')
 
 cta_path = os.getenv('CTA_PATH', 'CTA_Bullets')
 
+tokenizer = BartTokenizerFast.from_pretrained('sshleifer/distilbart-cnn-12-6')
+
 def download_file(path, file):
     target_dir = f'{cta_root_path}/{path}'
     if not os.path.exists(target_dir):
@@ -46,6 +48,18 @@ def load_summarizer():
     global summarizer
     summarizer = pipeline('summarization', model='sshleifer/distilbart-cnn-12-6', tokenizer='sshleifer/distilbart-cnn-12-6')
 
+def get_max_token_length(text):
+    sum_len = 0
+    num_tokens = 0
+    tokens = tokenizer.tokenize(text)
+    for i,t in enumerate(tokens):
+        if sum_len < 1000:
+            num_tokens = i
+            sum_len = sum_len + len(t)
+        else:
+            break
+    return num_tokens
+
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
     data = {}
@@ -54,9 +68,9 @@ def summarizer():
         req_data= flask.request.get_json()
 
     intext = req_data['text']
-    maxlen = req_data['max length']
+    maxlen = get_max_token_length(intext)
 
-    sumtext = summarizer(intext, min_length=5, max_length=maxlen, clean_up_tokenization_spaces = True)
+    sumtext = summarizer(intext, min_length=10, max_length=maxlen, clean_up_tokenization_spaces = True)
     data['summarized text'] = sumtext[0]['summary_text']
 
     return flask.jsonify(data)
