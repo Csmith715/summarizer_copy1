@@ -65,7 +65,7 @@ def summarizer():
     data = {}
 
     if flask.request.content_type == 'application/json':
-        req_data= flask.request.get_json()
+        req_data = flask.request.get_json()
 
     intext = req_data['text']
     maxlen = get_max_token_length(intext)
@@ -104,11 +104,11 @@ def updateCTA():
         final_list = purge_extra(joined_list)
         new_rule_dict[r['name']] = final_list
 
-    new_rule_dict['HWW_Rules'] = new_rule_dict['How, What, Why Rule #1'] + new_rule_dict['How, What, Why Rule #2'] + new_rule_dict['How, What, Why Rule #3']
+    new_rule_dict['HWW_Rules'] = new_rule_dict['How, What, Why, When, Which, Where Rule #1'] + new_rule_dict['How, What, Why, When, Which, Where Rule #2'] + new_rule_dict['How, What, Why, When, Which, Where Rule #3']
     new_rule_dict['Noun_Rules'] = new_rule_dict['Noun Rule #1'] + new_rule_dict['Noun Rule #2']
-    del new_rule_dict['How, What, Why Rule #1']
-    del new_rule_dict['How, What, Why Rule #2']
-    del new_rule_dict['How, What, Why Rule #3']
+    del new_rule_dict['How, What, Why, When, Which, Where Rule #1']
+    del new_rule_dict['How, What, Why, When, Which, Where Rule #2']
+    del new_rule_dict['How, What, Why, When, Which, Where Rule #3']
     del new_rule_dict['Noun Rule #1']
     del new_rule_dict['Noun Rule #2']
 
