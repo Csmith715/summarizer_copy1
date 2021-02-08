@@ -69,7 +69,7 @@ def summarizer():
 
     intext = req_data['text']
     max_character_length = req_data['max length']
-    maxlen = get_max_token_length(intext, max_character_length)
+    maxlen = get_max_token_length(intext, int(max_character_length))
 
     sumtext = summarizer(intext, min_length=10, max_length=maxlen, clean_up_tokenization_spaces = True)
     data['summarized text'] = sumtext[0]['summary_text']
