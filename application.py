@@ -48,12 +48,12 @@ def load_summarizer():
     global summarizer
     summarizer = pipeline('summarization', model='sshleifer/distilbart-cnn-12-6', tokenizer='sshleifer/distilbart-cnn-12-6')
 
-def get_max_token_length(text):
+def get_max_token_length(text, character_length):
     sum_len = 0
     num_tokens = 0
     tokens = tokenizer.tokenize(text)
     for i,t in enumerate(tokens):
-        if sum_len < 1000:
+        if sum_len < character_length:
             num_tokens = i
             sum_len = sum_len + len(t)
         else:
@@ -68,7 +68,8 @@ def summarizer():
         req_data = flask.request.get_json()
 
     intext = req_data['text']
-    maxlen = get_max_token_length(intext)
+    max_character_length = req_data['max length']
+    maxlen = get_max_token_length(intext, max_character_length)
 
     sumtext = summarizer(intext, min_length=10, max_length=maxlen, clean_up_tokenization_spaces = True)
     data['summarized text'] = sumtext[0]['summary_text']
