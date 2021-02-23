@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 import pickle
 from itertools import product
 from simpletransformers.seq2seq import Seq2SeqModel, Seq2SeqArgs
-
+import torch
 import boto3
 
 import nltk
