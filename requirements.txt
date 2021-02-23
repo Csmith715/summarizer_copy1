@@ -6,7 +6,7 @@ s3transfer==0.3.3
 six==1.11.0
 torch
 torchvision
-transformers==3.0.2
+transformers==4.3.2
 sentence_transformers
 pandas
 nltk
