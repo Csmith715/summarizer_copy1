@@ -133,7 +133,7 @@ def generatequestions():
     model = Seq2SeqModel(
         encoder_decoder_type="bart",
         encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-        use_cuda=True,
+        use_cuda=torch.cuda.is_available()
     )
 
     data['generated question'] = model.predict([inputtext])
