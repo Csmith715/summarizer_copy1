@@ -1,4 +1,5 @@
 import flask
+import transformers
 from transformers import pipeline, BartTokenizerFast
 import os
 import pandas as pd
