@@ -106,13 +106,25 @@ def summarizer():
 
     return flask.jsonify(data)
 
-@application.route('/summarizer/question-generation', methods=['POST'])
+@application.route('/summarizer/generatequestions', methods=['POST'])
+def generatequestions():
     download_s3_folder(bucket_name, 'question-generation')
+    data = {}
+
+    if flask.request.content_type == 'application/json':
+        req_data = flask.request.get_json()
+
+    inputtext = req_data['text']
+    
     model = Seq2SeqModel(
         encoder_decoder_type="bart",
         encoder_decoder_name=os.path.join(qg_root_path, qg_path),
         use_cuda=True,
     )
+
+    data['generated question'] = model.predict([inputtext])
+
+    return flask.jsonify(data)
 
 
 @application.route('/summarizer/updateCTA', methods=['GET'])
