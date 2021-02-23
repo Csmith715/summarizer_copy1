@@ -6,26 +6,56 @@ import json
 from sentence_transformers import SentenceTransformer
 import pickle
 from itertools import product
+from simpletransformers.seq2seq import Seq2SeqModel, Seq2SeqArgs
 
 import boto3
-import botocore
 
 import nltk
 from nltk.corpus import stopwords
 
 stop_words = set(stopwords.words('english')) 
 
-#BUCKET_NAME = 'contentware-nlp' 
-#KEY = 'CTA_Bullets/campaign-metadata.json' 
-
-application = flask.Flask(__name__)
-
 
 cta_root_path = os.getenv('CTA_ROOT_PATH', '/tmp')
+qg_root_path = os.getenv('QG_ROOT_PATH', '/tmp')
 bucket_name = os.getenv('BUCKET_NAME', 'contentware-nlp')
 s3 = boto3.client('s3')
 
+def download_s3_folder(bucket_name, s3_folder):
+    """
+    Download the contents of a folder directory
+    Args:
+        bucket_name: the name of the s3 bucket
+        s3_folder: the folder path in the s3 bucket
+        local_dir: a relative or absolute directory path in the local file system
+    """
+    local_dir = f'{qg_root_path}/{qg_path}'
+    # if not os.path.exists(local_dir):
+    #     os.makedirs(target_dir, exist_ok=True)
+
+    bucket = s3.Bucket(bucket_name)
+    for obj in bucket.objects.filter(Prefix=s3_folder):
+        target = obj.key if local_dir is None \
+            else os.path.join(local_dir, os.path.relpath(obj.key, s3_folder))
+        if not os.path.exists(os.path.dirname(target)):
+            os.makedirs(os.path.dirname(target))
+        if obj.key[-1] == '/':
+            continue
+        bucket.download_file(obj.key, target)
+
+def download_file(path, file):
+    target_dir = f'{cta_root_path}/{path}'
+    if not os.path.exists(target_dir):
+        os.makedirs(target_dir, exist_ok=True)
+
+    return s3.download_file(bucket_name, f'{path}/{file}', f'{target_dir}/{file}')
+
+
 cta_path = os.getenv('CTA_PATH', 'CTA_Bullets')
+qg_path = os.getenv('QG_PATH', 'question-generation')
+
+
+application = flask.Flask(__name__)
 
 tokenizer = BartTokenizerFast.from_pretrained('sshleifer/distilbart-cnn-12-6')
 
@@ -75,6 +105,15 @@ def summarizer():
     data['summarized text'] = sumtext[0]['summary_text']
 
     return flask.jsonify(data)
+
+@application.route('/summarizer/question-generation', methods=['POST'])
+    download_s3_folder(bucket_name, 'question-generation')
+    model = Seq2SeqModel(
+        encoder_decoder_type="bart",
+        encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+        use_cuda=True,
+    )
+
 
 @application.route('/summarizer/updateCTA', methods=['GET'])
 def updateCTA():
