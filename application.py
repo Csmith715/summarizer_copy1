@@ -22,36 +22,38 @@ qg_root_path = os.getenv('QG_ROOT_PATH', '/tmp')
 bucket_name = os.getenv('BUCKET_NAME', 'contentware-nlp')
 s3 = boto3.client('s3')
 
-# def download_s3_folder(bucket_name, s3_folder):
-#     """
-#     Download the contents of a folder directory
-#     Args:
-#         bucket_name: the name of the s3 bucket
-#         s3_folder: the folder path in the s3 bucket
-#         local_dir: a relative or absolute directory path in the local file system
-#     """
-#     local_dir = f'{qg_root_path}/{qg_path}'
-#     # if not os.path.exists(local_dir):
-#     #     os.makedirs(target_dir, exist_ok=True)
+def download_s3_folder(bucket_name, s3_folder):
+    """
+    Download the contents of a folder directory
+    Args:
+        bucket_name: the name of the s3 bucket
+        s3_folder: the folder path in the s3 bucket
+        local_dir: a relative or absolute directory path in the local file system
+    """
+    local_dir = f'{qg_root_path}/{qg_path}'
+    # if not os.path.exists(local_dir):
+    #     os.makedirs(target_dir, exist_ok=True)
 
-#     #bucket = s3.Bucket(bucket_name)
-#     bucket = bucket_name
-#     for obj in bucket.objects.filter(Prefix=s3_folder):
-#         target = obj.key if local_dir is None \
-#             else os.path.join(local_dir, os.path.relpath(obj.key, s3_folder))
-#         if not os.path.exists(os.path.dirname(target)):
-#             os.makedirs(os.path.dirname(target))
-#         if obj.key[-1] == '/':
-#             continue
-#         bucket.download_file(obj.key, target)
-
-def downloadDirectoryFroms3(bucketName, remoteDirectoryName):
+    #bucket = s3.Bucket(bucket_name)
+    #bucket = bucket_name
     s3_resource = boto3.resource('s3')
-    bucket = s3_resource.Bucket(bucketName) 
-    for obj in bucket.objects.filter(Prefix = remoteDirectoryName):
-        if not os.path.exists(os.path.dirname(obj.key)):
-            os.makedirs(os.path.dirname(obj.key))
-        bucket.download_file(obj.key, obj.key) # save to same path
+    bucket = s3_resource.Bucket(bucketName)
+    for obj in bucket.objects.filter(Prefix=s3_folder):
+        target = obj.key if local_dir is None \
+            else os.path.join(local_dir, os.path.relpath(obj.key, s3_folder))
+        if not os.path.exists(os.path.dirname(target)):
+            os.makedirs(os.path.dirname(target))
+        if obj.key[-1] == '/':
+            continue
+        bucket.download_file(obj.key, target)
+
+# def downloadDirectoryFroms3(bucketName, remoteDirectoryName):
+#     s3_resource = boto3.resource('s3')
+#     bucket = s3_resource.Bucket(bucketName) 
+#     for obj in bucket.objects.filter(Prefix = remoteDirectoryName):
+#         if not os.path.exists(os.path.dirname(obj.key)):
+#             os.makedirs(os.path.dirname(obj.key))
+#         bucket.download_file(obj.key, obj.key) # save to same path
 
 
 def download_file(path, file):
@@ -119,8 +121,8 @@ def summarizer():
 
 @application.route('/summarizer/generatequestions', methods=['POST'])
 def generatequestions():
-    #download_s3_folder(bucket_name, 'question-generation')
-    downloadDirectoryFroms3(bucket_name, 'question-generation')
+    download_s3_folder(bucket_name, 'question-generation')
+    #downloadDirectoryFroms3(bucket_name, 'question-generation')
     data = {}
 
     if flask.request.content_type == 'application/json':
