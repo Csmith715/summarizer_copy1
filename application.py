@@ -68,6 +68,11 @@ cta_path = os.getenv('CTA_PATH', 'CTA_Bullets')
 qg_path = os.getenv('QG_PATH', 'question-generation')
 
 download_s3_folder(bucket_name, 'question-generation')
+seq_model = Seq2SeqModel(
+    encoder_decoder_type="bart",
+    encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+    use_cuda=torch.cuda.is_available()
+)
 
 application = flask.Flask(__name__)
 
@@ -130,30 +135,14 @@ def generatequestions():
         req_data = flask.request.get_json()
 
     inputtext = req_data['text']
-    
-    model_args = Seq2SeqArgs()
-    model_args.use_multiprocessed_decoding = True
-    model_args.dosample = True
-    model_args.num_beams = None
-    model_args.top_k = 50
-    model_args.top_p = 0.95
-    model_args.num_train_epochs = 20
-    model_args.no_save = True
-    model_args.max_length = 50
-    model_args.overwrite_output_dir = True
-    model_args.train_batch_size = 5
-    model_args.overwrite_output_dir = True
-    model_args.reprocess_input_data = True
-    model_args.save_eval_checkpoints = False
 
-    model = Seq2SeqModel(
-        encoder_decoder_type="bart",
-        encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-        args=model_args,
-        use_cuda=torch.cuda.is_available()
-    )
+    # seq_model = Seq2SeqModel(
+    #     encoder_decoder_type="bart",
+    #     encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+    #     use_cuda=torch.cuda.is_available()
+    # )
 
-    data['generated question'] = model.predict([inputtext])
+    data['generated question'] = seq_model.predict([inputtext])
 
     return flask.jsonify(data)
 
