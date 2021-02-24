@@ -132,7 +132,7 @@ def generatequestions():
     inputtext = req_data['text']
     
     model_args = Seq2SeqArgs()
-    use_multiprocessed_decoding = True
+    model_args.use_multiprocessed_decoding = True
     model_args.dosample = True
     model_args.num_beams = None
     model_args.top_k = 50
