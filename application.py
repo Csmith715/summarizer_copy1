@@ -67,6 +67,7 @@ def download_file(path, file):
 cta_path = os.getenv('CTA_PATH', 'CTA_Bullets')
 qg_path = os.getenv('QG_PATH', 'question-generation')
 
+download_s3_folder(bucket_name, 'question-generation')
 
 application = flask.Flask(__name__)
 
