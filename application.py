@@ -149,6 +149,7 @@ def generatequestions():
     model = Seq2SeqModel(
         encoder_decoder_type="bart",
         encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+        args=model_args,
         use_cuda=torch.cuda.is_available()
     )
 
