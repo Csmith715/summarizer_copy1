@@ -131,6 +131,21 @@ def generatequestions():
 
     inputtext = req_data['text']
     
+    model_args = Seq2SeqArgs()
+    use_multiprocessed_decoding = True
+    model_args.dosample = True
+    model_args.num_beams = None
+    model_args.top_k = 50
+    model_args.top_p = 0.95
+    model_args.num_train_epochs = 20
+    model_args.no_save = True
+    model_args.max_length = 50
+    model_args.overwrite_output_dir = True
+    model_args.train_batch_size = 5
+    model_args.overwrite_output_dir = True
+    model_args.reprocess_input_data = True
+    model_args.save_eval_checkpoints = False
+
     model = Seq2SeqModel(
         encoder_decoder_type="bart",
         encoder_decoder_name=os.path.join(qg_root_path, qg_path),
