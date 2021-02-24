@@ -121,7 +121,7 @@ def summarizer():
 
 @application.route('/summarizer/generatequestions', methods=['POST'])
 def generatequestions():
-    download_s3_folder(bucket_name, 'question-generation')
+    #download_s3_folder(bucket_name, 'question-generation')
     #downloadDirectoryFroms3(bucket_name, 'question-generation')
     data = {}
 
