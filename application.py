@@ -110,6 +110,31 @@ def get_max_token_length(text, character_length):
             break
     return num_tokens
 
+ptl = [
+    'WEBINAR',
+    'EVENT',
+    'ONLINE EVENT',
+    'VIRTUAL EVENT',
+    'ONLINE SESSION',
+    'CONFERENCE',
+    'SEMINAR',
+    'LECTURE'
+]
+
+def replace_tokens(dod, event_type):
+    embedding_dict = {}
+    for d in dod:
+        subbed_phraseology_list = []
+        for x in dod[d]['name']:
+            subbed_text = x.replace('{%Token%}', p.capitalize())
+            subbed_text = subbed_text.replace('{%token%}', p.lower())
+            subbed_text = subbed_text.replace('{%TOKEN%}', p)
+            subbed_phraseology_list.append(subbed_text)
+        
+        embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in subbed_phraseology_list]
+        embedding_dict[d] = embedding
+    return embedding_dict
+
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
     data = {}
@@ -188,13 +213,19 @@ def updateCTA():
     # Create embedding dictionary for CTA's
     model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
 
-    embedding_dict = {}
-    for d in dict_of_dfs:
-        embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in dict_of_dfs[d]['name']]
-        embedding_dict[d] = embedding
+    # embedding_dict = {}
+    # for d in dict_of_dfs:
+    #     embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in dict_of_dfs[d]['name']]
+    #     embedding_dict[d] = embedding
+    event_dict = {}
+    for p in ptl:
+        ed = replace_tokens(dict_of_dfs, p)
+        event_dict[p] = ed   
 
+    # with open(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), 'wb') as fp:
+    #     pickle.dump(embedding_dict, fp)
     with open(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), 'wb') as fp:
-        pickle.dump(embedding_dict, fp)
+        pickle.dump(event_dict, fp)
 
     with open(os.path.join(cta_root_path, cta_path, 'bullet_rules.json'), 'w') as fp:
         json.dump(new_rule_dict, fp)
