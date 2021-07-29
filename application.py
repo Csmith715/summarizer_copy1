@@ -126,9 +126,9 @@ def replace_tokens(dod, event_type):
     for d in dod:
         subbed_phraseology_list = []
         for x in dod[d]['name']:
-            subbed_text = x.replace('{%Token%}', p.capitalize())
-            subbed_text = subbed_text.replace('{%token%}', p.lower())
-            subbed_text = subbed_text.replace('{%TOKEN%}', p)
+            subbed_text = x.replace('{%Token%}', event_type.capitalize())
+            subbed_text = subbed_text.replace('{%token%}', event_type.lower())
+            subbed_text = subbed_text.replace('{%TOKEN%}', event_type)
             subbed_phraseology_list.append(subbed_text)
         
         embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in subbed_phraseology_list]
