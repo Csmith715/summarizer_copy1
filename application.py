@@ -121,6 +121,8 @@ ptl = [
     'LECTURE'
 ]
 
+model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
+
 def replace_tokens(dod, event_type):
     embedding_dict = {}
     for d in dod:
@@ -211,7 +213,7 @@ def updateCTA():
     del new_rule_dict['Noun Rule #2']
 
     # Create embedding dictionary for CTA's
-    model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
+    #model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
 
     # embedding_dict = {}
     # for d in dict_of_dfs:
