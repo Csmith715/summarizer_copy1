@@ -110,20 +110,9 @@ def get_max_token_length(text, character_length):
             break
     return num_tokens
 
-ptl = [
-    'WEBINAR',
-    'EVENT',
-    'ONLINE EVENT',
-    'VIRTUAL EVENT',
-    'ONLINE SESSION',
-    'CONFERENCE',
-    'SEMINAR',
-    'LECTURE'
-]
+# model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
 
-model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
-
-def replace_tokens(dod, event_type):
+def replace_tokens(dod, event_type, model):
     embedding_dict = {}
     for d in dod:
         subbed_phraseology_list = []
@@ -213,15 +202,16 @@ def updateCTA():
     del new_rule_dict['Noun Rule #2']
 
     # Create embedding dictionary for CTA's
-    #model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
 
     # embedding_dict = {}
     # for d in dict_of_dfs:
     #     embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in dict_of_dfs[d]['name']]
     #     embedding_dict[d] = embedding
+    ptl = ['WEBINAR','EVENT','ONLINE EVENT','VIRTUAL EVENT','ONLINE SESSION','CONFERENCE','SEMINAR','LECTURE']
+    sbert_model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
     event_dict = {}
     for p in ptl:
-        ed = replace_tokens(dict_of_dfs, p)
+        ed = replace_tokens(dict_of_dfs, p, sbert_model)
         event_dict[p] = ed   
 
     # with open(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), 'wb') as fp:
