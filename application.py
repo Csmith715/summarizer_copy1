@@ -211,7 +211,7 @@ def updateCTA():
     sbert_model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
     event_dict = {}
     for p in ptl:
-        ed = replace_tokens(dict_of_dfs, p, sbert_model)
+        ed = replace_tokens(dict_of_dfs, p.replace('_',' '), sbert_model)
         event_dict[p] = ed   
 
     # with open(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), 'wb') as fp:
