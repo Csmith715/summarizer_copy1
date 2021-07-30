@@ -207,7 +207,7 @@ def updateCTA():
     # for d in dict_of_dfs:
     #     embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in dict_of_dfs[d]['name']]
     #     embedding_dict[d] = embedding
-    ptl = ['WEBINAR','EVENT','ONLINE EVENT','VIRTUAL EVENT','ONLINE SESSION','CONFERENCE','SEMINAR','LECTURE']
+    ptl = ['WEBINAR','EVENT','ONLINE_EVENT','VIRTUAL_EVENT','ONLINE_SESSION','CONFERENCE','SEMINAR','LECTURE']
     sbert_model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
     event_dict = {}
     for p in ptl:
