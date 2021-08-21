@@ -165,7 +165,7 @@ def generatequestions():
     return flask.jsonify(data)
 
 @application.route('/summarizer/generatequestions_test', methods=['POST'])
-def generatequestions():
+def generatequestions_test():
     data = {}
 
     if flask.request.content_type == 'application/json':
