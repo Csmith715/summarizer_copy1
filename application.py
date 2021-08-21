@@ -182,7 +182,7 @@ def generatequestions_test():
         result = exe.map(create_questions,inputbullets)
 
 
-    data['generated questions'] = result
+    data['generated questions'] = list(result)
 
     return flask.jsonify(data)
 
