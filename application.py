@@ -165,7 +165,8 @@ def generatequestions():
     #     use_cuda=torch.cuda.is_available()
     # )
 
-    data['generated question'] = seq_model.predict([inputtext])
+    #data['generated question'] = seq_model.predict([inputtext])
+    data['generated question'] = seq_model.predict(inputtext)
 
     return flask.jsonify(data)
 
@@ -180,7 +181,6 @@ def generatequestions_test():
     with ThreadPoolExecutor() as exe:
         exe.submit(create_questions)
         result = exe.map(create_questions,inputbullets)
-
 
     data['generated questions'] = list(result)
 
