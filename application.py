@@ -10,6 +10,7 @@ from itertools import product
 from simpletransformers.seq2seq import Seq2SeqModel, Seq2SeqArgs
 import torch
 import boto3
+from concurrent.futures import ThreadPoolExecutor
 
 import nltk
 from nltk.corpus import stopwords
@@ -163,6 +164,33 @@ def generatequestions():
 
     return flask.jsonify(data)
 
+@application.route('/summarizer/generatequestions_test', methods=['POST'])
+def generatequestions():
+    data = {}
+
+    if flask.request.content_type == 'application/json':
+        req_data = flask.request.get_json()
+
+    inputbullets = req_data['text']
+    with ThreadPoolExecutor() as exe:
+        exe.submit(send_gq_request)
+        result = exe.map(send_gq_request,bstring_noquestions)
+
+
+    data['generated questions'] = result
+
+    return flask.jsonify(data)
+
+
+# for b in bstrings:
+#     if b[-1] != '?':
+#         post_data = {"text": str(b)}
+#         r = requests.post('https://gateway.dev.contentware.com/ai/summarizer/generatequestions', json = post_data)
+#         gq = r.json()['generated question']
+#         gq = fix_caps(b, gq[0])
+#         gquestions.append(gq if gq else '')
+#     else:
+#         gquestions.append('')
 
 @application.route('/summarizer/updateCTA', methods=['GET'])
 def updateCTA():
