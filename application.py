@@ -128,7 +128,7 @@ def replace_tokens(dod, event_type, model):
     return embedding_dict
 
 def create_questions(text):
-    gq = seq_model.predict([inputtext])
+    gq = seq_model.predict([text])
     return gq
 #     gq = fix_caps(text, gq[0])
 
