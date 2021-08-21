@@ -127,6 +127,11 @@ def replace_tokens(dod, event_type, model):
         embedding_dict[d] = embedding
     return embedding_dict
 
+def create_questions(text):
+    gq = seq_model.predict([inputtext])
+    return gq
+#     gq = fix_caps(text, gq[0])
+
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
     data = {}
@@ -173,8 +178,8 @@ def generatequestions_test():
 
     inputbullets = req_data['text']
     with ThreadPoolExecutor() as exe:
-        exe.submit(send_gq_request)
-        result = exe.map(send_gq_request,bstring_noquestions)
+        exe.submit(create_questions)
+        result = exe.map(create_questions,inputbullets)
 
 
     data['generated questions'] = result
