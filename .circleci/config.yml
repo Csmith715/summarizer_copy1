@@ -1,8 +1,8 @@
 version: 2.1
 orbs:
-  aws-ecr: circleci/aws-ecr@6.15.2
-  aws-eks: circleci/aws-eks@1.0.3
-  helm: circleci/helm@1.1.2
+  aws-ecr: circleci/aws-ecr@7.0.0
+  aws-eks: circleci/aws-eks@1.1.0
+  helm: circleci/helm@1.2.0
 
 references:
   workspace_root: &workspace_root
@@ -24,8 +24,7 @@ references:
     filters:
       branches:
         only:
-          - /feature\/.*/
-          - /bugfix\/.*/
+          - main
 
   stage_filter: &stage_filter
     context: aws-stage
@@ -33,15 +32,13 @@ references:
       branches:
         only:
           - /release\/.*/
-          - /hotfix\/.*/
-          - main
 
   prod_filter: &prod_filter
     context: aws-prod
     filters:
       branches:
         only:
-          - main
+          - /release\/.*/
 
 commands:
   build-push-image:
@@ -172,6 +169,7 @@ workflows:
           <<: *stage_filter
       - rollout-job:
           name: rollout-stage
+          namespace: stage
           requires:
             - docker-stage
           <<: *stage_filter
@@ -179,17 +177,14 @@ workflows:
       ##############
       # Production #
       ##############
-      - docker-job:
-          name: docker-prod
-          <<: *prod_filter
       - hold:
-          <<: *prod_filter
           type: approval
           requires:
-            - docker-prod
+            - docker-stage
+          <<: *prod_filter
       - rollout-job:
           name: rollout-prod
           requires:
             - hold
-            - docker-prod
+            - docker-stage
           <<: *prod_filter
