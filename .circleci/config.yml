@@ -127,7 +127,7 @@ jobs:
           cluster-name: << parameters.cluster-name >>
           aws-region: << parameters.aws-region >>
       - helm/install-helm-client:
-          version: "v3.1.2"
+          version: "v3.6.3"
       - upgrade-helm:
           release: summarizer
           namespace: << parameters.namespace >>
