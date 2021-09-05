@@ -1,2 +1,6 @@
-# ai-summarizer
-Contentware AI Summarizer
+# summarizer
+
+## Dependencies
+```bash
+pip install -r requirements.txt
+```

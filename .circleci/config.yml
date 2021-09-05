@@ -1,0 +1,190 @@
+version: 2.1
+orbs:
+  aws-ecr: circleci/aws-ecr@7.0.0
+  aws-eks: circleci/aws-eks@1.1.0
+  helm: circleci/helm@1.2.0
+
+references:
+  workspace_root: &workspace_root
+    ~/summarizer
+
+  attach_workspace: &attach_workspace
+    attach_workspace:
+      at: *workspace_root
+
+  test_filter: &test_filter
+    context: aws-dev  # uses dev cluster
+    filters:
+      branches:
+        only:
+          - testing
+
+  dev_filter: &dev_filter
+    context: aws-dev
+    filters:
+      branches:
+        only:
+          - main
+
+  stage_filter: &stage_filter
+    context: aws-stage
+    filters:
+      branches:
+        only:
+          - /release\/.*/
+
+  prod_filter: &prod_filter
+    context: aws-prod
+    filters:
+      branches:
+        only:
+          - /release\/.*/
+
+commands:
+  build-push-image:
+    description: "Build and push Docker Image to AWS ECR"
+    parameters:
+      repo:
+        type: string
+      remote-docker:
+        type: boolean
+        default: false
+      latest-tag:
+        type: string
+    steps:
+      - aws-ecr/build-and-push-image:
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          region: AWS_REGION
+          account-url: ECR_ACCOUNT_URL
+          repo: << parameters.repo >>
+          dockerfile: Dockerfile
+          tag: "${CIRCLE_SHA1},<< parameters.latest-tag >>"
+          setup-remote-docker: << parameters.remote-docker >>
+          checkout: false
+          create-repo: true
+  upgrade-helm:
+    description: "Upgrade Helm Chart"
+    parameters:
+      aws-environment:
+        type: string
+        default: ${ENVIRONMENT}
+      release:
+        type: string
+      namespace:
+        type: string
+        default: app
+    steps:
+      - helm/upgrade-helm-chart:
+          chart: .kube/<< parameters.release >>
+          namespace: << parameters.namespace >>
+          release-name: << parameters.release >>
+          values: .kube/<< parameters.release >>/values-<< parameters.aws-environment >>.yaml
+          wait: true
+          timeout: 600s
+          values-to-override: image.tag=${CIRCLE_SHA1}
+
+jobs:
+  docker-job:
+    parameters:
+      latest-tag:
+        type: string
+        default: latest
+    executor:
+      name: aws-ecr/default
+      use-docker-layer-caching: true
+    working_directory: *workspace_root
+    steps:
+      - checkout
+      - build-push-image:
+          repo: summarizer
+          latest-tag: << parameters.latest-tag >>
+
+  rollout-job:
+    executor: aws-eks/python3
+    parameters:
+      cluster-name:
+        description: Name of the EKS cluster
+        type: string
+        default: cw-${ENVIRONMENT}
+      aws-environment:
+        description: AWS Environment
+        type: string
+        default: ${ENVIRONMENT}
+      aws-region:
+        description: AWS Region
+        type: string
+        default: ${AWS_REGION}
+      namespace:
+        description: Kubernetes Namespace
+        type: string
+        default: app
+    working_directory: *workspace_root
+    steps:
+      - checkout
+      - aws-eks/update-kubeconfig-with-authenticator:
+          install-kubectl: false
+          cluster-name: << parameters.cluster-name >>
+          aws-region: << parameters.aws-region >>
+      - helm/install-helm-client:
+          version: "v3.1.2"
+      - upgrade-helm:
+          release: summarizer
+          namespace: << parameters.namespace >>
+
+workflows:
+  ci:
+    jobs:
+      ########
+      # Test #
+      ########
+      - docker-job:
+          name: docker-test
+          latest-tag: testing
+          <<: *test_filter
+      - rollout-job:
+          name: rollout-test
+          namespace: testing
+          requires:
+            - docker-test
+          <<: *test_filter
+
+      ###############
+      # Development #
+      ###############
+      - docker-job:
+          name: docker-dev
+          <<: *dev_filter
+      - rollout-job:
+          name: rollout-dev
+          requires:
+            - docker-dev
+          <<: *dev_filter
+
+      ###########
+      # Staging #
+      ###########
+      - docker-job:
+          name: docker-stage
+          <<: *stage_filter
+      - rollout-job:
+          name: rollout-stage
+          namespace: stage
+          requires:
+            - docker-stage
+          <<: *stage_filter
+
+      ##############
+      # Production #
+      ##############
+      - hold:
+          type: approval
+          requires:
+            - docker-stage
+          <<: *prod_filter
+      - rollout-job:
+          name: rollout-prod
+          requires:
+            - hold
+            - docker-stage
+          <<: *prod_filter
