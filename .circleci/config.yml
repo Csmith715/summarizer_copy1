@@ -66,7 +66,7 @@ commands:
   upgrade-helm:
     description: "Upgrade Helm Chart"
     parameters:
-      aws-environment:
+      values-environment:
         type: string
         default: ${ENVIRONMENT}
       release:
@@ -79,7 +79,7 @@ commands:
           chart: .kube/<< parameters.release >>
           namespace: << parameters.namespace >>
           release-name: << parameters.release >>
-          values: .kube/<< parameters.release >>/values-<< parameters.aws-environment >>.yaml
+          values: .kube/<< parameters.release >>/values-<< parameters.values-environment >>.yaml
           wait: true
           timeout: 600s
           values-to-override: image.tag=${CIRCLE_SHA1}
@@ -107,8 +107,8 @@ jobs:
         description: Name of the EKS cluster
         type: string
         default: cw-${ENVIRONMENT}
-      aws-environment:
-        description: AWS Environment
+      values-environment:
+        description: Helm Values Environment
         type: string
         default: ${ENVIRONMENT}
       aws-region:
@@ -170,6 +170,7 @@ workflows:
       - rollout-job:
           name: rollout-stage
           namespace: stage
+          values-environment: stage
           requires:
             - docker-stage
           <<: *stage_filter
