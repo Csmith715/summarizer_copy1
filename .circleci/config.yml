@@ -131,6 +131,7 @@ jobs:
       - upgrade-helm:
           release: summarizer
           namespace: << parameters.namespace >>
+          values-environment: << parameters.values-environment >>
 
 workflows:
   ci:
