@@ -1,6 +1,6 @@
 import flask
 import transformers
-from transformers import pipeline, BartTokenizerFast
+# from transformers import pipeline, BartTokenizerFast
 import os
 import pandas as pd
 import json
@@ -78,14 +78,14 @@ seq_model = Seq2SeqModel(
 
 application = flask.Flask(__name__)
 
-tokenizer = BartTokenizerFast.from_pretrained('sshleifer/distilbart-cnn-12-6')
+# tokenizer = BartTokenizerFast.from_pretrained('sshleifer/distilbart-cnn-12-6')
 
-def download_file(path, file):
-    target_dir = f'{cta_root_path}/{path}'
-    if not os.path.exists(target_dir):
-        os.makedirs(target_dir, exist_ok=True)
+# def download_file(path, file):
+#     target_dir = f'{cta_root_path}/{path}'
+#     if not os.path.exists(target_dir):
+#         os.makedirs(target_dir, exist_ok=True)
 
-    return s3.download_file(bucket_name, f'{path}/{file}', f'{target_dir}/{file}')
+#     return s3.download_file(bucket_name, f'{path}/{file}', f'{target_dir}/{file}')
 
 def purge_extra(rule_list):
     outlist = []
@@ -95,9 +95,9 @@ def purge_extra(rule_list):
             outlist.append(phrase)
     return outlist
 
-def load_summarizer():
-    global summarizer
-    summarizer = pipeline('summarization', model='sshleifer/distilbart-cnn-12-6', tokenizer='sshleifer/distilbart-cnn-12-6')
+# def load_summarizer():
+#     global summarizer
+#     summarizer = pipeline('summarization', model='sshleifer/distilbart-cnn-12-6', tokenizer='sshleifer/distilbart-cnn-12-6')
 
 def get_max_token_length(text, character_length):
     sum_len = 0
@@ -143,8 +143,9 @@ def summarizer():
     max_character_length = req_data['max length']
     maxlen = get_max_token_length(intext, int(max_character_length))
 
-    sumtext = summarizer(intext, min_length=10, max_length=maxlen, clean_up_tokenization_spaces = True)
-    data['summarized text'] = sumtext[0]['summary_text']
+    # sumtext = summarizer(intext, min_length=10, max_length=maxlen, clean_up_tokenization_spaces = True)
+    # data['summarized text'] = sumtext[0]['summary_text']
+    data['summarized text'] = intext
 
     return flask.jsonify(data)
 
@@ -269,5 +270,5 @@ if __name__ == "__main__":
     port = os.getenv('FLASK_PORT', 5000)
     host = os.getenv('FLASK_HOST', None)
     debug = not os.getenv('LIVE', False)
-    load_summarizer()
+    # load_summarizer()
     application.run(host=host, port=port, debug=debug)
