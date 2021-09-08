@@ -69,23 +69,28 @@ cta_path = os.getenv('CTA_PATH', 'CTA_Bullets')
 qg_path = os.getenv('QG_PATH', 'question-generation')
 
 download_s3_folder(bucket_name, 'question-generation')
-print(torch.cuda.is_available())
-seq_model = Seq2SeqModel(
-    encoder_decoder_type="bart",
-    encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-    use_cuda=torch.cuda.is_available()
-)
+# print(torch.cuda.is_available())
+# seq_model = Seq2SeqModel(
+#     encoder_decoder_type="bart",
+#     encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+#     use_cuda=torch.cuda.is_available()
+# )
 
 application = flask.Flask(__name__)
+# @application.before_first_request
+# def before_first_request():
+#     load_summarizer()
 
-# tokenizer = BartTokenizerFast.from_pretrained('sshleifer/distilbart-cnn-12-6')
+# summarizer = None
+# tokenizer = None
 
-# def download_file(path, file):
-#     target_dir = f'{cta_root_path}/{path}'
-#     if not os.path.exists(target_dir):
-#         os.makedirs(target_dir, exist_ok=True)
-
-#     return s3.download_file(bucket_name, f'{path}/{file}', f'{target_dir}/{file}')
+# def load_summarizer():
+#     # global summarizer
+#     if summarizer and tokenizer:
+#         return
+#     else:
+#         summarizer = pipeline('summarization', model='sshleifer/distilbart-cnn-12-6', tokenizer='sshleifer/distilbart-cnn-12-6')
+#         tokenizer = BartTokenizerFast.from_pretrained('sshleifer/distilbart-cnn-12-6')
 
 def purge_extra(rule_list):
     outlist = []
@@ -94,10 +99,6 @@ def purge_extra(rule_list):
         if len(nlist) == len(set(nlist)):
             outlist.append(phrase)
     return outlist
-
-# def load_summarizer():
-#     global summarizer
-#     summarizer = pipeline('summarization', model='sshleifer/distilbart-cnn-12-6', tokenizer='sshleifer/distilbart-cnn-12-6')
 
 def get_max_token_length(text, character_length):
     sum_len = 0
@@ -160,11 +161,11 @@ def generatequestions():
 
     inputtext = req_data['text']
 
-    # seq_model = Seq2SeqModel(
-    #     encoder_decoder_type="bart",
-    #     encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-    #     use_cuda=torch.cuda.is_available()
-    # )
+    seq_model = Seq2SeqModel(
+        encoder_decoder_type="bart",
+        encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+        use_cuda=torch.cuda.is_available()
+    )
 
     #data['generated question'] = seq_model.predict([inputtext])
     data['generated question'] = seq_model.predict(inputtext)
