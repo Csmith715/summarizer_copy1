@@ -70,11 +70,11 @@ qg_path = os.getenv('QG_PATH', 'question-generation')
 
 download_s3_folder(bucket_name, 'question-generation')
 # print(torch.cuda.is_available())
-# seq_model = Seq2SeqModel(
-#     encoder_decoder_type="bart",
-#     encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-#     use_cuda=torch.cuda.is_available()
-# )
+seq_model = Seq2SeqModel(
+    encoder_decoder_type="bart",
+    encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+    use_cuda=torch.cuda.is_available()
+)
 
 application = flask.Flask(__name__)
 # @application.before_first_request
@@ -161,11 +161,11 @@ def generatequestions():
 
     inputtext = req_data['text']
 
-    seq_model = Seq2SeqModel(
-        encoder_decoder_type="bart",
-        encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-        use_cuda=torch.cuda.is_available()
-    )
+    # seq_model = Seq2SeqModel(
+    #     encoder_decoder_type="bart",
+    #     encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+    #     use_cuda=torch.cuda.is_available()
+    # )
 
     #data['generated question'] = seq_model.predict([inputtext])
     data['generated question'] = seq_model.predict(inputtext)
