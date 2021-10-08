@@ -4,7 +4,7 @@ import transformers
 import os
 import pandas as pd
 import json
-# from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer
 import pickle
 from itertools import product
 from simpletransformers.seq2seq import Seq2SeqModel, Seq2SeqArgs
@@ -114,7 +114,7 @@ def get_max_token_length(text, character_length):
 
 # model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
 
-def replace_tokens(dod, event_type):
+def replace_tokens(dod, event_type, model):
     embedding_dict = {}
     for d in dod:
         subbed_phraseology_list = []
@@ -124,8 +124,7 @@ def replace_tokens(dod, event_type):
             subbed_text = subbed_text.replace('{%TOKEN%}', event_type)
             subbed_phraseology_list.append(subbed_text)
         
-        # embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in subbed_phraseology_list]
-        embedding = []
+        embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in subbed_phraseology_list]
         embedding_dict[d] = embedding
     return embedding_dict
 
@@ -134,22 +133,22 @@ def create_questions(text):
     return gq
 #     gq = fix_caps(text, gq[0])
 
-# @application.route('/summarizer', methods=['POST'])
-# def summarizer():
-#     data = {}
+@application.route('/summarizer', methods=['POST'])
+def summarizer():
+    data = {}
 
-#     if flask.request.content_type == 'application/json':
-#         req_data = flask.request.get_json()
+    if flask.request.content_type == 'application/json':
+        req_data = flask.request.get_json()
 
-#     intext = req_data['text']
-#     max_character_length = req_data['max length']
-#     maxlen = get_max_token_length(intext, int(max_character_length))
+    intext = req_data['text']
+    max_character_length = req_data['max length']
+    maxlen = get_max_token_length(intext, int(max_character_length))
 
-#     # sumtext = summarizer(intext, min_length=10, max_length=maxlen, clean_up_tokenization_spaces = True)
-#     # data['summarized text'] = sumtext[0]['summary_text']
-#     data['summarized text'] = intext
+    # sumtext = summarizer(intext, min_length=10, max_length=maxlen, clean_up_tokenization_spaces = True)
+    # data['summarized text'] = sumtext[0]['summary_text']
+    data['summarized text'] = intext
 
-#     return flask.jsonify(data)
+    return flask.jsonify(data)
 
 @application.route('/summarizer/generatequestions', methods=['POST'])
 def generatequestions():
@@ -244,10 +243,10 @@ def updateCTA():
     #     embedding = [(t, model.encode(t, convert_to_tensor=False)) for t in dict_of_dfs[d]['name']]
     #     embedding_dict[d] = embedding
     ptl = ['WEBINAR','EVENT','ONLINE_EVENT','VIRTUAL_EVENT','ONLINE_SESSION','CONFERENCE','SEMINAR','LECTURE']
-    # sbert_model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
+    sbert_model = SentenceTransformer('distilbert-base-nli-stsb-mean-tokens')
     event_dict = {}
     for p in ptl:
-        ed = replace_tokens(dict_of_dfs, p.replace('_',' '))
+        ed = replace_tokens(dict_of_dfs, p.replace('_',' '), sbert_model)
         event_dict[p] = ed   
 
     # with open(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), 'wb') as fp:
