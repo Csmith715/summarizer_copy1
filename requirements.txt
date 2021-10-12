@@ -11,4 +11,3 @@ transformers==4.3.2
 pandas
 nltk
 simpletransformers<0.62.0
-sentence-transformers<0.3.8
