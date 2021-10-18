@@ -48,14 +48,6 @@ def download_s3_folder(bucket_name, s3_folder):
             continue
         bucket.download_file(obj.key, target)
 
-# def downloadDirectoryFroms3(bucketName, remoteDirectoryName):
-#     s3_resource = boto3.resource('s3')
-#     bucket = s3_resource.Bucket(bucketName) 
-#     for obj in bucket.objects.filter(Prefix = remoteDirectoryName):
-#         if not os.path.exists(os.path.dirname(obj.key)):
-#             os.makedirs(os.path.dirname(obj.key))
-#         bucket.download_file(obj.key, obj.key) # save to same path
-
 
 def download_file(path, file):
     target_dir = f'{cta_root_path}/{path}'
