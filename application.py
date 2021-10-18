@@ -14,6 +14,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 import nltk
 from nltk.corpus import stopwords
+import logging
+
+logger = logging.getLogger()
 
 stop_words = set(stopwords.words('english')) 
 
@@ -61,12 +64,14 @@ cta_path = os.getenv('CTA_PATH', 'CTA_Bullets')
 qg_path = os.getenv('QG_PATH', 'question-generation')
 
 download_s3_folder(bucket_name, 'question-generation')
+logger.info('Folder downloaded')
 # print(torch.cuda.is_available())
 seq_model = Seq2SeqModel(
     encoder_decoder_type="bart",
     encoder_decoder_name=os.path.join(qg_root_path, qg_path),
     use_cuda=torch.cuda.is_available()
 )
+logger.info('Model Loaded')
 
 application = flask.Flask(__name__)
 # @application.before_first_request
@@ -153,7 +158,7 @@ def generatequestions():
         req_data = flask.request.get_json()
 
     inputtext = req_data['text']
-
+    logger.info('data received')
     # seq_model = Seq2SeqModel(
     #     encoder_decoder_type="bart",
     #     encoder_decoder_name=os.path.join(qg_root_path, qg_path),
