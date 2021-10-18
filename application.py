@@ -70,20 +70,21 @@ download_s3_folder(bucket_name, 'question-generation')
 logger.info('Folder downloaded')
 # print(torch.cuda.is_available())
 
-
+seq_model = Seq2SeqModel(
+    encoder_decoder_type="bart",
+    encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+    use_cuda=torch.cuda.is_available()
+)
+logger.info('Model Loaded')
+    
 application = flask.Flask(__name__)
 
 @application.before_first_request
 def before_first_request():
     log_level = logging.INFO
     application.logger.setLevel(log_level)
-    seq_model = Seq2SeqModel(
-        encoder_decoder_type="bart",
-        encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-        use_cuda=torch.cuda.is_available()
-    )
-    logger.info('Model Loaded')
-    
+
+
 # @application.before_first_request
 # def before_first_request():
 #     load_summarizer()
