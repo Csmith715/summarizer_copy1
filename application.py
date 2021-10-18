@@ -11,7 +11,7 @@ from simpletransformers.seq2seq import Seq2SeqModel, Seq2SeqArgs
 import torch
 import boto3
 from concurrent.futures import ThreadPoolExecutor
-
+import pathlib
 import nltk
 from nltk.corpus import stopwords
 import logging
@@ -40,6 +40,9 @@ def download_s3_folder(bucket_name, s3_folder):
 
     #bucket = s3.Bucket(bucket_name)
     #bucket = bucket_name
+    tdir = pathlib.Path(local_dir)
+    if tdir.is_dir():
+        return
     s3_resource = boto3.resource('s3')
     bucket = s3_resource.Bucket(bucket_name)
     for obj in bucket.objects.filter(Prefix=s3_folder):
