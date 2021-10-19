@@ -3,25 +3,24 @@ import os
 from models import ModelFuncs, bucket_name
 from utils import cta_path, cta_root_path, qg_path, qg_root_path
 import logging
+from simpletransformers.seq2seq import Seq2SeqModel
+import torch
 from logging.config import fileConfig
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
 
 application = flask.Flask(__name__)
-# @application.before_first_request
-# def before_first_request():
-#     load_summarizer()
 
-# summarizer = None
-# tokenizer = None
+model = None
+def load_model():
+    global model
+    if not model:
+        model = Seq2SeqModel(
+            encoder_decoder_type="bart",
+            encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+            use_cuda=torch.cuda.is_available()
+        )
 
-# def load_summarizer():
-#     # global summarizer
-#     if summarizer and tokenizer:
-#         return
-#     else:
-#         summarizer = pipeline('summarization', model='sshleifer/distilbart-cnn-12-6', tokenizer='sshleifer/distilbart-cnn-12-6')
-#         tokenizer = BartTokenizerFast.from_pretrained('sshleifer/distilbart-cnn-12-6')
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
     data = {}
@@ -39,17 +38,16 @@ def generatequestions():
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
     inputtext = req_data['text']
-    model_path = os.path.join(qg_root_path, qg_path)
-    mfuncs = ModelFuncs(model_path)
     logger.info('Generating Quesitons')
-    data['generated question'] = mfuncs.create_questions(inputtext)
+    data['generated question'] = model.predict(inputtext)
+    logger.info('Questions Created')
 
     return flask.jsonify(data)
 
 @application.route('/summarizer/updateCTA', methods=['GET'])
 def updatecta():
-    mfuncs = ModelFuncs(model_dir=None)
-    mfuncs.CongigureCTA(cta_path, cta_root_path, bucket_name)
+    mfuncs = ModelFuncs(cta_path, cta_root_path, bucket_name)
+    mfuncs.CongigureCTA()
     return flask.Response(response='done', status=200, mimetype='text/plain')
 
 @application.route('/healthz', methods=['GET'])
@@ -60,5 +58,6 @@ if __name__ == "__main__":
     port = os.getenv('FLASK_PORT', 5000)
     host = os.getenv('FLASK_HOST', None)
     debug = not os.getenv('LIVE', False)
-    # load_summarizer()
+    load_model()
+    logger.info('Seq2Seq Model Loaded')
     application.run(host=host, port=port, debug=debug)

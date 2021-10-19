@@ -1,6 +1,5 @@
-from simpletransformers.seq2seq import Seq2SeqModel
+
 from utils import download_s3_folder, download_file, s3
-import torch
 from nltk.corpus import stopwords
 import os
 from itertools import product
@@ -27,20 +26,11 @@ def replace_tokens(dod, event_type):
     return embedding_dict
 
 class ModelFuncs:
-    def __init__(self, model_dir):
-        self.dir = model_dir
-        self.model = Seq2SeqModel(
-            encoder_decoder_type="bart",
-            encoder_decoder_name=self.dir,
-            use_cuda=torch.cuda.is_available()
-        )
-        logger.info('Seq2Seq Model Loaded')
+    def __init__(self, cta_path, cta_root_path, bname):
+        self.cpath = cta_path
+        self.crpath = cta_root_path
+        self.buck_name = bname
         self.stop_words = set(stopwords.words('english'))
-
-    def create_questions(self, in_text):
-        gqs = self.model.predict(in_text)
-        logger.info('Questions Created')
-        return gqs
 
     def purge_extra(self, rule_list):
         outlist = []
@@ -50,10 +40,10 @@ class ModelFuncs:
                 outlist.append(phrase)
         return outlist
 
-    def CongigureCTA(self, cta_path,cta_root_path, bname):
-        download_file(cta_path, 'campaign-metadata.json', bname)
+    def CongigureCTA(self):
+        download_file(self.cpath, 'campaign-metadata.json', self.buck_name)
         # Load JSON CTA/Wrapper Info
-        with open(os.path.join(cta_root_path, cta_path, 'campaign-metadata.json')) as f:
+        with open(os.path.join(self.crpath, self.cpath, 'campaign-metadata.json')) as f:
             rules = json.load(f)
 
         # Create a dictionary of dataframes for each CTA
@@ -88,14 +78,14 @@ class ModelFuncs:
         for p in ptl:
             ed = replace_tokens(dict_of_dfs, p.replace('_', ' '))
             event_dict[p] = ed
-        with open(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), 'wb') as fp:
+        with open(os.path.join(self.crpath, self.cpath, 'phraseology_embeddings.pkl'), 'wb') as fp:
             pickle.dump(event_dict, fp)
-        with open(os.path.join(cta_root_path, cta_path, 'bullet_rules.json'), 'w') as fp:
+        with open(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), 'w') as fp:
             json.dump(new_rule_dict, fp)
 
-        s3.upload_file(os.path.join(cta_root_path, cta_path, 'phraseology_embeddings.pkl'), bucket_name,
+        s3.upload_file(os.path.join(self.crpath, self.cpath, 'phraseology_embeddings.pkl'), self.buck_name,
                        'CTA_Bullets/phraseology_embeddings.pkl')
-        s3.upload_file(os.path.join(cta_root_path, cta_path, 'bullet_rules.json'), bucket_name,
+        s3.upload_file(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), self.buck_name,
                        'CTA_Bullets/bullet_rules.json')
 
 
