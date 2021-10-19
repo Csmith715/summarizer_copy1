@@ -20,6 +20,7 @@ def load_model():
             encoder_decoder_name=os.path.join(qg_root_path, qg_path),
             use_cuda=torch.cuda.is_available()
         )
+        logger.info('Model Loaded')
 
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
@@ -38,7 +39,7 @@ def generatequestions():
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
     inputtext = req_data['text']
-    logger.info('Generating Quesitons')
+    logger.info('Generating Questions')
     data['generated question'] = model.predict(inputtext)
     logger.info('Questions Created')
 
