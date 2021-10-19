@@ -53,7 +53,6 @@ def updatecta():
 def healthz():
     return flask.Response(response='ok', status=200, mimetype='text/plain')
 
-
 if __name__ == "__main__":
     port = os.getenv('FLASK_PORT', 5000)
     host = os.getenv('FLASK_HOST', None)
