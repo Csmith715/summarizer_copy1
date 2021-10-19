@@ -1,7 +1,7 @@
 import flask
 import os
 from models import ModelFuncs, bucket_name
-from utils import cta_path, cta_root_path
+from utils import cta_path, cta_root_path, qg_path, qg_root_path
 import logging
 from logging.config import fileConfig
 fileConfig('logging.conf')
@@ -39,14 +39,17 @@ def generatequestions():
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
     inputtext = req_data['text']
+    model_path = os.path.join(qg_root_path, qg_path)
+    mfuncs = ModelFuncs(model_path)
     logger.info('Generating Quesitons')
-    data['generated question'] = ModelFuncs.create_questions(inputtext)
+    data['generated question'] = mfuncs.create_questions(inputtext)
 
     return flask.jsonify(data)
 
 @application.route('/summarizer/updateCTA', methods=['GET'])
 def updatecta():
-    ModelFuncs(post_data=None).CongigureCTA(cta_path, cta_root_path, bucket_name)
+    mfuncs = ModelFuncs(model_dir=None)
+    mfuncs.CongigureCTA(cta_path, cta_root_path, bucket_name)
     return flask.Response(response='done', status=200, mimetype='text/plain')
 
 @application.route('/healthz', methods=['GET'])

@@ -27,18 +27,18 @@ def replace_tokens(dod, event_type):
     return embedding_dict
 
 class ModelFuncs:
-    def __init__(self, post_data):
+    def __init__(self, model_dir):
+        self.dir = model_dir
         self.model = Seq2SeqModel(
             encoder_decoder_type="bart",
-            encoder_decoder_name=dir,
+            encoder_decoder_name=self.dir,
             use_cuda=torch.cuda.is_available()
         )
         logger.info('Seq2Seq Model Loaded')
         self.stop_words = set(stopwords.words('english'))
-        self.in_text = post_data
 
-    def create_questions(self):
-        gqs = self.model.predict(self.in_text)
+    def create_questions(self, in_text):
+        gqs = self.model.predict(in_text)
         logger.info('Questions Created')
         return gqs
 
