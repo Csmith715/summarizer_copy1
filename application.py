@@ -40,13 +40,13 @@ def generatequestions():
         req_data = flask.request.get_json()
     inputtext = req_data['text']
     logger.info('Generating Quesitons')
-    data['generated question'] = ModelFuncs().create_questions(inputtext)
+    data['generated question'] = ModelFuncs.create_questions(inputtext)
 
     return flask.jsonify(data)
 
 @application.route('/summarizer/updateCTA', methods=['GET'])
 def updatecta():
-    ModelFuncs().CongigureCTA(cta_path, cta_root_path, bucket_name)
+    ModelFuncs(post_data=None).CongigureCTA(cta_path, cta_root_path, bucket_name)
     return flask.Response(response='done', status=200, mimetype='text/plain')
 
 @application.route('/healthz', methods=['GET'])

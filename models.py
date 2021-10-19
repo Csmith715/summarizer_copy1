@@ -27,7 +27,7 @@ def replace_tokens(dod, event_type):
     return embedding_dict
 
 class ModelFuncs:
-    def __init__(self):
+    def __init__(self, post_data):
         self.model = Seq2SeqModel(
             encoder_decoder_type="bart",
             encoder_decoder_name=dir,
@@ -35,9 +35,10 @@ class ModelFuncs:
         )
         logger.info('Seq2Seq Model Loaded')
         self.stop_words = set(stopwords.words('english'))
+        self.in_text = post_data
 
-    def create_questions(self, text):
-        gqs = self.model.predict(text)
+    def create_questions(self):
+        gqs = self.model.predict(self.in_text)
         logger.info('Questions Created')
         return gqs
 
