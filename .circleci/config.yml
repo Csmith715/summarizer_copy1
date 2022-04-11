@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
-  aws-ecr: circleci/aws-ecr@7.0.0
-  aws-eks: circleci/aws-eks@1.1.0
+  aws-ecr: circleci/aws-ecr@7.3.0
+  aws-eks: circleci/aws-eks@2.1.2
   helm: circleci/helm@1.2.0
 
 references:
@@ -101,7 +101,8 @@ jobs:
           latest-tag: << parameters.latest-tag >>
 
   rollout-job:
-    executor: aws-eks/python3
+    docker:
+      - image: cimg/python:3.10
     parameters:
       cluster-name:
         description: Name of the EKS cluster
