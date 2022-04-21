@@ -25,6 +25,21 @@ def replace_tokens(dod, event_type):
         embedding_dict[d] = embedding
     return embedding_dict
 
+def replace_rule_tokens(base_rule_dict, event_key) -> dict:
+    new_rule_dict = {}
+    for k, v in base_rule_dict.items():
+        replaced_rule_values = []
+        if not v:
+            new_rule_dict[k] = []
+        else:
+            for value in v:
+                subbed_text = value.replace('{%Token%}', event_key.capitalize())
+                subbed_text = subbed_text.replace('{%token%}', event_key.lower())
+                subbed_text = subbed_text.replace('{%TOKEN%}', event_key)
+                replaced_rule_values.append(subbed_text)
+            new_rule_dict[k] = replaced_rule_values
+    return new_rule_dict
+
 class ModelFuncs:
     def __init__(self, cta_path, cta_root_path, bname):
         self.cpath = cta_path
@@ -73,7 +88,12 @@ class ModelFuncs:
         del new_rule_dict['Noun Rule #2']
 
         ptl = ['WEBINAR', 'EVENT', 'ONLINE_EVENT', 'VIRTUAL_EVENT', 'ONLINE_SESSION', 'CONFERENCE', 'SEMINAR',
-               'LECTURE']
+               'LECTURE']  # TODO: Include an unaltered version to allow for user input event types
+
+        categorized_rule_dict = {}
+        for p in ptl:
+            categorized_rule_dict[p] = replace_rule_tokens(new_rule_dict, p)
+
         event_dict = {}
         for p in ptl:
             ed = replace_tokens(dict_of_dfs, p.replace('_', ' '))
@@ -81,7 +101,7 @@ class ModelFuncs:
         with open(os.path.join(self.crpath, self.cpath, 'phraseology_embeddings.pkl'), 'wb') as fp:
             pickle.dump(event_dict, fp)
         with open(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), 'w') as fp:
-            json.dump(new_rule_dict, fp)
+            json.dump(categorized_rule_dict, fp)
 
         s3.upload_file(os.path.join(self.crpath, self.cpath, 'phraseology_embeddings.pkl'), self.buck_name,
                        'CTA_Bullets/phraseology_embeddings.pkl')
