@@ -92,7 +92,7 @@ class ModelFuncs:
 
         categorized_rule_dict = {}
         for p in ptl:
-            categorized_rule_dict[p] = replace_rule_tokens(new_rule_dict, p)
+            categorized_rule_dict[p] = replace_rule_tokens(new_rule_dict, p.replace('_', ' '))
 
         event_dict = {}
         for p in ptl:
