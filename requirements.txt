@@ -10,3 +10,4 @@ nltk==3.6.5
 simpletransformers==0.62.0
 python-json-logger==0.1.11
 sentence-transformers==2.2.0
+tensorboardX==2.5.1
