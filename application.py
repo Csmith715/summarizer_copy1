@@ -18,6 +18,7 @@ def load_model():
         model = Seq2SeqModel(
             encoder_decoder_type="bart",
             encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+            # encoder_decoder_name='/Users/micksmith/Contentware_files/SummarizerWeights',
             use_cuda=torch.cuda.is_available()
         )
         logger.info('Model Loaded')
@@ -54,6 +55,7 @@ def updatecta():
 @application.route('/healthz', methods=['GET'])
 def healthz():
     return flask.Response(response='ok', status=200, mimetype='text/plain')
+
 
 if __name__ == "__main__":
     port = os.getenv('FLASK_PORT', 5000)

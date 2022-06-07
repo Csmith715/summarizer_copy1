@@ -7,10 +7,39 @@ import json
 import pickle
 import pandas as pd
 import logging
+from sentence_transformers import SentenceTransformer
 
 bucket_name = os.getenv('BUCKET_NAME', 'contentware-nlp')
 logger = logging.getLogger()
 download_s3_folder(bucket_name, 'question-generation')
+st_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+rule_cats = [
+    'CTA_Take Action (Long)',
+    'CTA _Question',
+    'CTA_Urgent (Long)',
+    'CTA_Day of Reminder (Long)',
+    'CTA_Day Before Reminder (Long)',
+    'CTA_Day Before Reminder (Short)',
+    'CTA_Day of Reminder (Short)',
+    'CTA_Take Action (Short)',
+    'CTA_Urgent (Short)',
+    'Single Bullet Question Follow Up',
+    'CTA_Take Action Question Follow Up',
+    'CTA Take Action  Long (Social Card)',
+    'CTA Drive Urgency Long (Social Card)',
+    'CTA Day Before Reminder Long  (Social Card)',
+    'CTA Day of  Reminder Long (Social Card)'
+]
+
+def make_cta_embeddings(rules: dict):
+    cta_phraseologies = []
+    for r in rule_cats:
+        for k in rules.keys():
+            values = [x[0] for x in rules[k][r]]
+            cta_phraseologies.extend(values)
+    cta_emb = st_model.encode(cta_phraseologies)
+    return cta_emb
 
 def replace_tokens(dod, event_type):
     embedding_dict = {}
@@ -88,7 +117,7 @@ class ModelFuncs:
         del new_rule_dict['Noun Rule #2']
 
         ptl = ['WEBINAR', 'EVENT', 'ONLINE_EVENT', 'VIRTUAL_EVENT', 'ONLINE_SESSION', 'CONFERENCE', 'SEMINAR',
-               'LECTURE']  # TODO: Include an unaltered version to allow for user input event types
+               'LECTURE']
 
         categorized_rule_dict = {}
         for p in ptl:
@@ -98,6 +127,9 @@ class ModelFuncs:
         for p in ptl:
             ed = replace_tokens(dict_of_dfs, p.replace('_', ' '))
             event_dict[p] = ed
+        cta_embeddings = make_cta_embeddings(event_dict)
+        with open(os.path.join(self.crpath, self.cpath, 'cta_embeddings.pkl'), 'wb') as fp:
+            pickle.dump(cta_embeddings, fp)
         with open(os.path.join(self.crpath, self.cpath, 'phraseology_embeddings.pkl'), 'wb') as fp:
             pickle.dump(event_dict, fp)
         with open(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), 'w') as fp:
@@ -107,8 +139,6 @@ class ModelFuncs:
                        'CTA_Bullets/phraseology_embeddings.pkl')
         s3.upload_file(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), self.buck_name,
                        'CTA_Bullets/bullet_rules.json')
-
-
 
 
 
