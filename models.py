@@ -139,7 +139,5 @@ class ModelFuncs:
                        'CTA_Bullets/phraseology_embeddings.pkl')
         s3.upload_file(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), self.buck_name,
                        'CTA_Bullets/bullet_rules.json')
-
-
-
-
+        s3.upload_file(os.path.join(self.crpath, self.cpath, 'cta_embeddings.pkl'), self.buck_name,
+                       'CTA_Bullets/cta_embeddings.pkl')
