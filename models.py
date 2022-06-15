@@ -41,20 +41,23 @@ def make_cta_embeddings(rules: dict):
     cta_emb = st_model.encode(cta_phraseologies)
     return cta_emb
 
-def replace_tokens(dod, event_type):
+def replace_tokens(dod: dict, event_type: str) -> dict:
     embedding_dict = {}
     for d in dod:
-        subbed_phraseology_list = []
-        for x in dod[d]['name']:
-            subbed_text = x.replace('{%Token%}', event_type.capitalize())
-            subbed_text = subbed_text.replace('{%token%}', event_type.lower())
-            subbed_text = subbed_text.replace('{%TOKEN%}', event_type)
-            subbed_phraseology_list.append(subbed_text)
+        if event_type == 'FREEFORM':
+            subbed_phraseology_list = dod[d]['name']
+        else:
+            subbed_phraseology_list = []
+            for x in dod[d]['name']:
+                subbed_text = x.replace('{%Token%}', event_type.capitalize())
+                subbed_text = subbed_text.replace('{%token%}', event_type.lower())
+                subbed_text = subbed_text.replace('{%TOKEN%}', event_type)
+                subbed_phraseology_list.append(subbed_text)
         embedding = [(t, []) for t in subbed_phraseology_list]
         embedding_dict[d] = embedding
     return embedding_dict
 
-def replace_rule_tokens(base_rule_dict, event_key) -> dict:
+def replace_rule_tokens(base_rule_dict: dict, event_key: str) -> dict:
     new_rule_dict = {}
     for k, v in base_rule_dict.items():
         replaced_rule_values = []
@@ -117,7 +120,7 @@ class ModelFuncs:
         del new_rule_dict['Noun Rule #2']
 
         ptl = ['WEBINAR', 'EVENT', 'ONLINE_EVENT', 'VIRTUAL_EVENT', 'ONLINE_SESSION', 'CONFERENCE', 'SEMINAR',
-               'LECTURE']
+               'LECTURE', 'FREEFORM']
 
         categorized_rule_dict = {}
         for p in ptl:
