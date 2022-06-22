@@ -15,12 +15,20 @@ model = None
 def load_model():
     global model
     if not model:
-        model = Seq2SeqModel(
-            encoder_decoder_type="bart",
-            encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-            # encoder_decoder_name='/Users/micksmith/Contentware_files/SummarizerWeights',
-            use_cuda=torch.cuda.is_available()
-        )
+        try:
+            model = Seq2SeqModel(
+                encoder_decoder_type="bart",
+                encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+                use_cuda=torch.cuda.is_available()
+            )
+        except Exception as e:
+            # for local testing
+            print(e)
+            model = Seq2SeqModel(
+                encoder_decoder_type="bart",
+                encoder_decoder_name='/Users/micksmith/Contentware_Local_Models/question_generation',
+                use_cuda=torch.cuda.is_available()
+            )
         logger.info('Model Loaded')
 
 @application.route('/summarizer', methods=['POST'])

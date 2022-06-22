@@ -1,6 +1,6 @@
 
 from utils import download_s3_folder, download_file, s3
-from nltk.corpus import stopwords
+# from nltk.corpus import stopwords
 import os
 # from itertools import product
 import json
@@ -77,15 +77,15 @@ class ModelFuncs:
         self.cpath = cta_path
         self.crpath = cta_root_path
         self.buck_name = bname
-        self.stop_words = set(stopwords.words('english'))
+        # self.stop_words = set(stopwords.words('english'))
 
-    def purge_extra(self, rule_list):
-        outlist = []
-        for phrase in rule_list:
-            nlist = [j.lower() for j in phrase.split(' ') if j not in self.stop_words]
-            if len(nlist) == len(set(nlist)):
-                outlist.append(phrase)
-        return outlist
+    # def purge_extra(self, rule_list):
+    #     outlist = []
+    #     for phrase in rule_list:
+    #         nlist = [j.lower() for j in phrase.split(' ') if j not in self.stop_words]
+    #         if len(nlist) == len(set(nlist)):
+    #             outlist.append(phrase)
+    #     return outlist
 
     def CongigureCTA(self):
         download_file(self.cpath, 'campaign-metadata.json', self.buck_name)
