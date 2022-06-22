@@ -5,7 +5,7 @@ import os
 # from itertools import product
 import json
 import pickle
-import pandas as pd
+# import pandas as pd
 import logging
 from sentence_transformers import SentenceTransformer
 
@@ -94,12 +94,12 @@ class ModelFuncs:
             rules = json.load(f)
 
         # Create a dictionary of dataframes for each CTA
-        dict_of_dfs = dict()
-        for x in rules['ctas']:
-            temp_df = pd.DataFrame(x['phrases'])
-            if not temp_df.empty:
-                temp_df = temp_df.drop(['ctaId'], axis=1)
-                dict_of_dfs[x['categoryName']] = temp_df
+        # dict_of_dfs = dict()
+        # for x in rules['ctas']:
+        #     temp_df = pd.DataFrame(x['phrases'])
+        #     if not temp_df.empty:
+        #         temp_df = temp_df.drop(['ctaId'], axis=1)
+        #         dict_of_dfs[x['categoryName']] = temp_df
 
         new_ph_dict = {}
         for r in rules['ctas']:
@@ -109,7 +109,7 @@ class ModelFuncs:
             for k, v in r['phrases'].items():
                 new_ph_dict[k][r['categoryName']] = [(val['name'], []) for val in v]
 
-        # # Create a dictonary of bullet point wrapper rules
+        # # Create a dictionary of bullet point wrapper rules
         # new_rule_dict = {}
         # for r in rules['bulletPoints']:
         #     bp = r['beforePositions']
@@ -127,21 +127,21 @@ class ModelFuncs:
         # del new_rule_dict['Noun Rule #1']
         # del new_rule_dict['Noun Rule #2']
 
-        ptl = ['WEBINAR', 'EVENT', 'ONLINE_EVENT', 'VIRTUAL_EVENT', 'ONLINE_SESSION', 'CONFERENCE', 'SEMINAR',
-               'LECTURE', 'FREEFORM']
+        # ptl = ['WEBINAR', 'EVENT', 'ONLINE_EVENT', 'VIRTUAL_EVENT', 'ONLINE_SESSION', 'CONFERENCE', 'SEMINAR',
+        #        'LECTURE', 'FREEFORM']
 
         categorized_rule_dict = rules['bulletPoints']
         # categorized_rule_dict = {}
         # for p in ptl:
         #     categorized_rule_dict[p] = replace_rule_tokens(new_rule_dict, p.replace('_', ' '))
 
-        event_dict = {}
-        for p in ptl:
-            ed = replace_tokens(new_ph_dict, p.replace('_', ' '))
-            event_dict[p] = ed
-        cta_embeddings = make_cta_embeddings(event_dict)
-        with open(os.path.join(self.crpath, self.cpath, 'cta_embeddings.pkl'), 'wb') as fp:
-            pickle.dump(cta_embeddings, fp)
+        # event_dict = {}
+        # for p in ptl:
+        #     ed = replace_tokens(new_ph_dict, p.replace('_', ' '))
+        #     event_dict[p] = ed
+        # cta_embeddings = make_cta_embeddings(event_dict)
+        # with open(os.path.join(self.crpath, self.cpath, 'cta_embeddings.pkl'), 'wb') as fp:
+        #     pickle.dump(cta_embeddings, fp)
         with open(os.path.join(self.crpath, self.cpath, 'phraseology_embeddings.pkl'), 'wb') as fp:
             pickle.dump(new_ph_dict, fp)
         with open(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), 'w') as fp:
@@ -151,5 +151,5 @@ class ModelFuncs:
                        'CTA_Bullets/phraseology_embeddings.pkl')
         s3.upload_file(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), self.buck_name,
                        'CTA_Bullets/bullet_rules.json')
-        s3.upload_file(os.path.join(self.crpath, self.cpath, 'cta_embeddings.pkl'), self.buck_name,
-                       'CTA_Bullets/cta_embeddings.pkl')
+        # s3.upload_file(os.path.join(self.crpath, self.cpath, 'cta_embeddings.pkl'), self.buck_name,
+        #                'CTA_Bullets/cta_embeddings.pkl')
