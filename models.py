@@ -2,7 +2,7 @@
 from utils import download_s3_folder, download_file, s3
 from nltk.corpus import stopwords
 import os
-from itertools import product
+# from itertools import product
 import json
 import pickle
 import pandas as pd
@@ -101,40 +101,49 @@ class ModelFuncs:
                 temp_df = temp_df.drop(['ctaId'], axis=1)
                 dict_of_dfs[x['categoryName']] = temp_df
 
-        # Create a dictonary of bullet point wrapper rules
-        new_rule_dict = {}
-        for r in rules['bulletPoints']:
-            bp = r['beforePositions']
-            full_list = list(product(*bp))
-            joined_list = [' '.join(f) + ' ' for f in full_list]
-            final_list = self.purge_extra(joined_list)
-            new_rule_dict[r['name']] = final_list
+        new_ph_dict = {}
+        for r in rules['ctas']:
+            for k, v in r['phrases'].items():
+                new_ph_dict[k] = {}
+        for r in rules['ctas']:
+            for k, v in r['phrases'].items():
+                new_ph_dict[k][r['categoryName']] = [(val['name'], []) for val in v]
 
-        new_rule_dict['HWW_Rules'] = new_rule_dict['How, What, Why, When, Which, Where Rule #1'] + new_rule_dict[
-            'How, What, Why, When, Which, Where Rule #2'] + new_rule_dict['How, What, Why, When, Which, Where Rule #3']
-        new_rule_dict['Noun_Rules'] = new_rule_dict['Noun Rule #1'] + new_rule_dict['Noun Rule #2']
-        del new_rule_dict['How, What, Why, When, Which, Where Rule #1']
-        del new_rule_dict['How, What, Why, When, Which, Where Rule #2']
-        del new_rule_dict['How, What, Why, When, Which, Where Rule #3']
-        del new_rule_dict['Noun Rule #1']
-        del new_rule_dict['Noun Rule #2']
+        # # Create a dictonary of bullet point wrapper rules
+        # new_rule_dict = {}
+        # for r in rules['bulletPoints']:
+        #     bp = r['beforePositions']
+        #     full_list = list(product(*bp))
+        #     joined_list = [' '.join(f) + ' ' for f in full_list]
+        #     final_list = self.purge_extra(joined_list)
+        #     new_rule_dict[r['name']] = final_list
+        #
+        # new_rule_dict['HWW_Rules'] = new_rule_dict['How, What, Why, When, Which, Where Rule #1'] + new_rule_dict[
+        #     'How, What, Why, When, Which, Where Rule #2'] + new_rule_dict['How, What, Why, When, Which, Where Rule #3']
+        # new_rule_dict['Noun_Rules'] = new_rule_dict['Noun Rule #1'] + new_rule_dict['Noun Rule #2']
+        # del new_rule_dict['How, What, Why, When, Which, Where Rule #1']
+        # del new_rule_dict['How, What, Why, When, Which, Where Rule #2']
+        # del new_rule_dict['How, What, Why, When, Which, Where Rule #3']
+        # del new_rule_dict['Noun Rule #1']
+        # del new_rule_dict['Noun Rule #2']
 
         ptl = ['WEBINAR', 'EVENT', 'ONLINE_EVENT', 'VIRTUAL_EVENT', 'ONLINE_SESSION', 'CONFERENCE', 'SEMINAR',
                'LECTURE', 'FREEFORM']
 
-        categorized_rule_dict = {}
-        for p in ptl:
-            categorized_rule_dict[p] = replace_rule_tokens(new_rule_dict, p.replace('_', ' '))
+        categorized_rule_dict = rules['bulletPoints']
+        # categorized_rule_dict = {}
+        # for p in ptl:
+        #     categorized_rule_dict[p] = replace_rule_tokens(new_rule_dict, p.replace('_', ' '))
 
         event_dict = {}
         for p in ptl:
-            ed = replace_tokens(dict_of_dfs, p.replace('_', ' '))
+            ed = replace_tokens(new_ph_dict, p.replace('_', ' '))
             event_dict[p] = ed
         cta_embeddings = make_cta_embeddings(event_dict)
         with open(os.path.join(self.crpath, self.cpath, 'cta_embeddings.pkl'), 'wb') as fp:
             pickle.dump(cta_embeddings, fp)
         with open(os.path.join(self.crpath, self.cpath, 'phraseology_embeddings.pkl'), 'wb') as fp:
-            pickle.dump(event_dict, fp)
+            pickle.dump(new_ph_dict, fp)
         with open(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), 'w') as fp:
             json.dump(categorized_rule_dict, fp)
 

@@ -39,4 +39,3 @@ def download_file(path, file, bucket_name):
         os.makedirs(target_dir, exist_ok=True)
 
     return s3.download_file(bucket_name, f'{path}/{file}', f'{target_dir}/{file}')
-

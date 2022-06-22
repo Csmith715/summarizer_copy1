@@ -26,7 +26,7 @@ def load_model():
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
     data = {}
-    req_data=None
+    req_data = None
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
     intext = req_data['text']
