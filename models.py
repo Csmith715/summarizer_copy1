@@ -1,8 +1,8 @@
 
 from utils import download_s3_folder, download_file, s3
-# from nltk.corpus import stopwords
+from nltk.corpus import stopwords
 import os
-# from itertools import product
+from itertools import product
 import json
 import pickle
 # import pandas as pd
@@ -77,15 +77,33 @@ class ModelFuncs:
         self.cpath = cta_path
         self.crpath = cta_root_path
         self.buck_name = bname
-        # self.stop_words = set(stopwords.words('english'))
+        self.stop_words = set(stopwords.words('english'))
 
-    # def purge_extra(self, rule_list):
-    #     outlist = []
-    #     for phrase in rule_list:
-    #         nlist = [j.lower() for j in phrase.split(' ') if j not in self.stop_words]
-    #         if len(nlist) == len(set(nlist)):
-    #             outlist.append(phrase)
-    #     return outlist
+    def purge_extra(self, rule_list):
+        outlist = []
+        for phrase in rule_list:
+            nlist = [j.lower() for j in phrase.split(' ') if j not in self.stop_words]
+            if len(nlist) == len(set(nlist)):
+                outlist.append(phrase)
+        return outlist
+
+    def make_rule_dict(self, promotion_dict: dict) -> dict:
+        new_rule_dict = {}
+        for r in promotion_dict:
+            bp = r['beforePositions']
+            full_list = list(product(*bp))
+            joined_list = [' '.join(f) + ' ' for f in full_list]
+            final_list = self.purge_extra(joined_list)
+            new_rule_dict[r['name']] = final_list
+        new_rule_dict['HWW_Rules'] = new_rule_dict['How, What, Why, When, Which, Where Rule #1'] + new_rule_dict[
+            'How, What, Why, When, Which, Where Rule #2'] + new_rule_dict['How, What, Why, When, Which, Where Rule #3']
+        new_rule_dict['Noun_Rules'] = new_rule_dict['Noun Rule #1'] + new_rule_dict['Noun Rule #2']
+        del new_rule_dict['How, What, Why, When, Which, Where Rule #1']
+        del new_rule_dict['How, What, Why, When, Which, Where Rule #2']
+        del new_rule_dict['How, What, Why, When, Which, Where Rule #3']
+        del new_rule_dict['Noun Rule #1']
+        del new_rule_dict['Noun Rule #2']
+        return new_rule_dict
 
     def CongigureCTA(self):
         download_file(self.cpath, 'campaign-metadata.json', self.buck_name)
@@ -109,7 +127,10 @@ class ModelFuncs:
             for k, v in r['phrases'].items():
                 new_ph_dict[k][r['categoryName']] = [(val['name'], []) for val in v]
 
-        # # Create a dictionary of bullet point wrapper rules
+        # Create a dictionary of bullet point wrapper rules
+        categorized_rule_dict = {}
+        for k, v in rules['bulletPoints'].items():
+            categorized_rule_dict[k] = self.make_rule_dict(v)
         # new_rule_dict = {}
         # for r in rules['bulletPoints']:
         #     bp = r['beforePositions']
@@ -130,7 +151,7 @@ class ModelFuncs:
         # ptl = ['WEBINAR', 'EVENT', 'ONLINE_EVENT', 'VIRTUAL_EVENT', 'ONLINE_SESSION', 'CONFERENCE', 'SEMINAR',
         #        'LECTURE', 'FREEFORM']
 
-        categorized_rule_dict = rules['bulletPoints']
+        # categorized_rule_dict = rules['bulletPoints']
         # categorized_rule_dict = {}
         # for p in ptl:
         #     categorized_rule_dict[p] = replace_rule_tokens(new_rule_dict, p.replace('_', ' '))
