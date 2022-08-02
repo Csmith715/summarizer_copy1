@@ -12,3 +12,4 @@ python-json-logger==0.1.11
 sentence-transformers==2.2.0
 tensorboardX==2.5.1
 seqeval==1.2.2
+openai==0.18.1

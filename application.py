@@ -1,4 +1,5 @@
 import flask
+from flask import render_template, request
 import os
 from models import ModelFuncs, bucket_name
 from utils import cta_path, cta_root_path, qg_path, qg_root_path
@@ -6,6 +7,8 @@ import logging
 from simpletransformers.seq2seq import Seq2SeqModel
 import torch
 from logging.config import fileConfig
+import blog
+
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
 
@@ -59,6 +62,28 @@ def updatecta():
     mfuncs = ModelFuncs(cta_path, cta_root_path, bucket_name)
     mfuncs.CongigureCTA()
     return flask.Response(response='done', status=200, mimetype='text/plain')
+
+@application.route('/summarizer/generate_blogs', methods=["GET", "POST"])
+def index():
+    if request.method == 'POST':
+        if 'form1' in request.form:
+            topic = request.form['content']
+            keywords = request.form['blogKeywords']
+            prompt = f'Write a blog about:\n{topic}\nKeywords:\n{keywords}\n\n\n'
+            blog_text = blog.write_blog(prompt)
+            written_blog = blog_text.replace('\n', '<br>')
+
+        if 'form2' in request.form:
+            prompt = request.form['gcontent']
+            blog_text = ''
+            if request.form['submit_button'] == 'continue':
+                blog_text = blog.continue_blog(prompt)
+            elif request.form['submit_button'] == 'conclude':
+                blog_text = blog.conclude_blog(prompt)
+            blog_text = blog_text.strip('\n').strip()
+            blog_text = f'{prompt}\n\n{blog_text}'
+
+    return render_template('index.html', **locals())
 
 @application.route('/healthz', methods=['GET'])
 def healthz():
