@@ -12,8 +12,13 @@ import blog
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
 
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
 application = flask.Flask(__name__)
 
+application.register_error_handler(404, page_not_found)
 model = None
 def load_model():
     global model
