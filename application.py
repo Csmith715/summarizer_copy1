@@ -90,6 +90,15 @@ def index():
 
     return render_template('index.html', **locals())
 
+@application.route('/summarizer/generate_email_subject_lines', methods=["GET", "POST"])
+def index2():
+    if request.method == 'POST':
+        if 'form1' in request.form:
+            email_body = request.form['email_content']
+            blog_text = blog.write_email_subject_lines(email_body)
+            written_subjectlines = blog_text.replace('\n', '<br>')
+    return render_template('index2.html', **locals())
+
 @application.route('/healthz', methods=['GET'])
 def healthz():
     return flask.Response(response='ok', status=200, mimetype='text/plain')

@@ -42,3 +42,16 @@ def conclude_blog(prompt1):
     )
 
     return response['choices'][0]['text']
+
+def write_email_subject_lines(email_body):
+    response = openai.Completion.create(
+        model="text-davinci-002",
+        prompt=f"Create a list of email subject lines for the following email:\n\n{email_body}\n\n1.",
+        temperature=0.7,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+
+    return response['choices'][0]['text']
