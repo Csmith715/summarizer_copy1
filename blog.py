@@ -68,6 +68,6 @@ def write_sms_campaigns(sms_body):
         presence_penalty=0
     )
     out_array = [r['text'].strip('\n') for r in response['choices']]
-    sms_text = '\n\n--------------'.join(out_array) if out_array else ''
+    sms_text = '\n\n--------------\n\n'.join(out_array) if out_array else ''
 
     return sms_text

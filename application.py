@@ -96,6 +96,7 @@ def index2():
         if 'form1' in request.form:
             email_body = request.form['email_content']
             email_text = blog.write_email_subject_lines(email_body)
+            email_text = f'1. {email_text}'
             written_subjectlines = email_text.replace('\n', '<br>')
     return render_template('index2.html', **locals())
 
