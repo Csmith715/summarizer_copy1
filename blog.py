@@ -8,7 +8,7 @@ def write_blog(prompt1):
       engine="davinci-instruct-beta-v3",
       prompt=prompt1,
       temperature=0.7,
-      max_tokens=250,
+      max_tokens=650,
       top_p=1,
       frequency_penalty=0,
       presence_penalty=0
