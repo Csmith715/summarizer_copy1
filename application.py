@@ -95,9 +95,18 @@ def index2():
     if request.method == 'POST':
         if 'form1' in request.form:
             email_body = request.form['email_content']
-            blog_text = blog.write_email_subject_lines(email_body)
-            written_subjectlines = blog_text.replace('\n', '<br>')
+            email_text = blog.write_email_subject_lines(email_body)
+            written_subjectlines = email_text.replace('\n', '<br>')
     return render_template('index2.html', **locals())
+
+@application.route('/summarizer/generate_sms_campaigns', methods=["GET", "POST"])
+def index3():
+    if request.method == 'POST':
+        if 'form1' in request.form:
+            sms_body = request.form['sms_content']
+            sms_text = blog.write_sms_campaigns(sms_body)
+            written_sms = sms_text.replace('\n', '<br>')
+    return render_template('index3.html', **locals())
 
 @application.route('/healthz', methods=['GET'])
 def healthz():

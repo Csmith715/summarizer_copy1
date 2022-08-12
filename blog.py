@@ -55,3 +55,19 @@ def write_email_subject_lines(email_body):
     )
 
     return response['choices'][0]['text']
+
+def write_sms_campaigns(sms_body):
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=f'Write an SMS promotion for the following event:\n\n{sms_body}\n\n',
+        temperature=0.5,
+        max_tokens=60,
+        top_p=1,
+        n=5,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    out_array = [r['text'].strip('\n') for r in response['choices']]
+    sms_text = '\n\n--------------'.join(out_array) if out_array else ''
+
+    return sms_text
