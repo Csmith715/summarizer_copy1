@@ -45,17 +45,17 @@
 
       <div class="row">
         <div class="col-lg-6">
-          <form class="" action="{{ url_for('index') }}" method="post">
+          <form class="" action="{{ url_for('index4') }}" method="post">
             <div class="mb-3">
-                <label for="content" class="form-label">What is the subject area for the blog?</label>
+                <label for="blog_topic_content" class="form-label">What is the subject area for the blog?</label>
                 <textarea
-                        name="content"
-                        id="content"
+                        name="blog_topic_content"
+                        id="blog_topic_content"
                         placeholder="Blog Subject"
                         rows="3"
                         cols="60"></textarea>
-                <label for="blogKeywords" class="form-label">Provide keywords related to the blog</label>
-                <input type="text" class="form-control" id="blogKeywords" name="blogKeywords" placeholder="Blog Keywords">
+                <label for="blogTopicKeywords" class="form-label">Provide keywords related to the blog</label>
+                <input type="text" class="form-control" id="blogTopicKeywords" name="blogKeywords" placeholder="Blog Keywords">
             </div>
             <input type="hidden" name="form1" value="form1">
             <button type="submit" id="blogTopicButton" class="btn btn-primary">Generate Topics</button>

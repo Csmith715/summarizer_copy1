@@ -113,8 +113,8 @@ def index3():
 def index4():
     if request.method == 'POST':
         if 'form1' in request.form:
-            topic = request.form['content']
-            keywords = request.form['blogKeywords']
+            topic = request.form['blog_topic_content']
+            keywords = request.form['blogTopicKeywords']
             topic_text = blog.generate_blog_topics(topic, keywords)
             written_topics = topic_text.replace('\n', '<br>')
     return render_template('index4.html', **locals())
