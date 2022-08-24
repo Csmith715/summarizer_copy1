@@ -109,6 +109,16 @@ def index3():
             written_sms = sms_text.replace('\n', '<br>')
     return render_template('index3.html', **locals())
 
+@application.route('/summarizer/generate_blog_topics', methods=["GET", "POST"])
+def index4():
+    if request.method == 'POST':
+        if 'form1' in request.form:
+            topic = request.form['content']
+            keywords = request.form['blogKeywords']
+            topic_text = blog.generate_blog_topics(topic, keywords)
+            written_topics = topic_text.replace('\n', '<br>')
+    return render_template('index4.html', **locals())
+
 @application.route('/healthz', methods=['GET'])
 def healthz():
     return flask.Response(response='ok', status=200, mimetype='text/plain')

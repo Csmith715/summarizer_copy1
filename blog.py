@@ -1,5 +1,6 @@
 import openai
 import config
+import numpy as np
 
 openai.api_key = config.OPENAI_API_KEY
 
@@ -71,3 +72,53 @@ def write_sms_campaigns(sms_body):
     sms_text = '\n\n--------------\n\n'.join(out_array) if out_array else ''
 
     return sms_text
+
+def generate_blog_topics(topic, keywords):
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=f'Create an interesting blog title about:\n{topic}\nKeywords:\n{keywords}\n\n',
+        temperature=1,
+        max_tokens=25,
+        top_p=1,
+        frequency_penalty=1.0,
+        presence_penalty=1.0,
+        logprobs=1,
+        n=5
+    )
+    blog_topic = select_text(response)
+    blog_topics = expand_blog_topics(blog_topic, topic, keywords)
+    blog_topics = f'1. {blog_topics}'
+    return blog_topics
+
+def expand_blog_topics(selected_topic, topic, keywords, number_of_topics=5):
+    num = number_of_topics+1
+    response = openai.Completion.create(
+        model="text-davinci-002",
+        prompt=f"Create an interesting blog title about:\n{topic}\nKeywords:\n{keywords}\n\n1. ",
+        suffix=f"\n{num}. {selected_topic}\n\n\n",
+        temperature=0.78,
+        max_tokens=150,
+        top_p=1,
+        frequency_penalty=0.9,
+        presence_penalty=1.63
+    )
+    return response['choices'][0]['text']
+
+ignore_list = ['\n', 'tp_tokens', 'Q', ':']
+
+def gpt3_creation_probability(individual_response):
+    tps = individual_response['logprobs']['token_logprobs']
+    probs = np.exp(tps)
+    tp_tokens = individual_response['logprobs']['tokens']
+    avg_array = [y for x,y in zip(tp_tokens, probs) if x not in ignore_list]
+    gpt3_avg = 0
+    if avg_array:
+        gpt3_avg = np.average(avg_array)
+    return gpt3_avg
+
+def select_text(response):
+    probs = [gpt3_creation_probability(g) for g in response['choices']]
+    texts = [g['text'] for g in response['choices']]
+    selected_text = texts[np.argmax(probs)]
+    selected_text = [t for t in selected_text.split('\n') if t][0]
+    return selected_text
