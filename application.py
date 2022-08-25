@@ -74,7 +74,7 @@ def index():
         if 'form1' in request.form:
             topic = request.form['content']
             keywords = request.form['blogKeywords']
-            prompt = f'Write a blog about:\n{topic}\nKeywords:\n{keywords}\n\n\n'
+            prompt = f'Write a long detailed blog about:\n{topic}\nKeywords:\n{keywords}\n\n\n'
             blog_text = blog.write_blog(prompt)
             written_blog = blog_text.replace('\n', '<br>')
 
