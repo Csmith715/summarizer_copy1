@@ -8,6 +8,7 @@ from simpletransformers.seq2seq import Seq2SeqModel
 import torch
 from logging.config import fileConfig
 import blog
+from blog import MultilineGenerations
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
@@ -95,7 +96,10 @@ def index2():
     if request.method == 'POST':
         if 'form1' in request.form:
             email_body = request.form['email_content']
-            email_text = blog.write_email_subject_lines(email_body)
+            number_topics = request.form['blogTopicNumber']
+            if number_topics == '' or number_topics == 0:
+                number_topics = 5
+            email_text = MultilineGenerations().write_email_subject_lines(email_body, number_topics)
             email_text = f'1. {email_text}'
             written_subjectlines = email_text.replace('\n', '<br>')
     return render_template('index2.html', **locals())
@@ -115,7 +119,10 @@ def index4():
         if 'form1' in request.form:
             topic = request.form['blog_topic_content']
             keywords = request.form['blogTopicKeywords']
-            topic_text = blog.generate_blog_topics(topic, keywords)
+            number_topics = request.form['blogTopicNumber']
+            if number_topics == '' or number_topics == 0:
+                number_topics = 5
+            topic_text = MultilineGenerations().generate_blog_topics(topic, keywords, number_topics)
             written_topics = topic_text.replace('\n', '<br>')
     return render_template('index4.html', **locals())
 
