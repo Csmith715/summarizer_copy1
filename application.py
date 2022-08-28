@@ -99,6 +99,8 @@ def index2():
             number_topics = request.form['eslTopicNumber']
             if number_topics == '' or number_topics == 0:
                 number_topics = 5
+            else:
+                number_topics = int(number_topics)
             email_text = MultilineGenerations().write_email_subject_lines(email_body, number_topics)
             email_text = f'1. {email_text}'
             written_subjectlines = email_text.replace('\n', '<br>')
@@ -122,6 +124,8 @@ def index4():
             number_topics = request.form['blogTopicNumber']
             if number_topics == '' or number_topics == 0:
                 number_topics = 5
+            else:
+                number_topics = int(number_topics)
             topic_text = MultilineGenerations().generate_blog_topics(topic, keywords, number_topics)
             written_topics = topic_text.replace('\n', '<br>')
     return render_template('index4.html', **locals())
