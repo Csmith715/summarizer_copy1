@@ -131,7 +131,7 @@ class MultilineGenerations:
 
 
 def expand_blog_topics(selected_topic, topic, keywords, number_of_topics=5):
-    num = number_of_topics+1
+    num = str(number_of_topics+1)
     response = openai.Completion.create(
         model="text-davinci-002",
         prompt=f"Create an interesting blog title about:\n{topic}\nKeywords:\n{keywords}\n\n1. ",
@@ -145,7 +145,7 @@ def expand_blog_topics(selected_topic, topic, keywords, number_of_topics=5):
     return response['choices'][0]['text']
 
 def expand_email_sl_topics(selected_topic, email_body, number_of_topics=5):
-    num = number_of_topics+1
+    num = str(number_of_topics+1)
     response = openai.Completion.create(
         model="text-davinci-002",
         prompt=f"Create a list of email subject lines for the following email:\n\n{email_body}\n\n1.",

@@ -96,7 +96,7 @@ def index2():
     if request.method == 'POST':
         if 'form1' in request.form:
             email_body = request.form['email_content']
-            number_topics = request.form['blogTopicNumber']
+            number_topics = request.form['eslTopicNumber']
             if number_topics == '' or number_topics == 0:
                 number_topics = 5
             email_text = MultilineGenerations().write_email_subject_lines(email_body, number_topics)
