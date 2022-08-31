@@ -9,6 +9,7 @@ import torch
 from logging.config import fileConfig
 import blog
 from blog import MultilineGenerations
+from src.gpt3_generations import GPT3Creations
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
@@ -129,6 +130,20 @@ def index4():
             topic_text = MultilineGenerations().generate_blog_topics(topic, keywords, number_topics)
             written_topics = topic_text.replace('\n', '<br>')
     return render_template('index4.html', **locals())
+
+@application.route('/gpt3_creations/generate_blogs', methods=["POST"])
+def generate_blogs():
+    data = {}
+    req_data = None
+    if flask.request.content_type == 'application/json':
+        req_data = flask.request.get_json()
+    g_type = req_data['type']
+    topic = req_data['description']
+    keywords = req_data['keywords']
+    data['content'], data['tokens'] = GPT3Creations().select_and_write(g_type, topic, keywords)
+    logger.info('GPT3 Content Created')
+
+    return flask.jsonify(data)
 
 @application.route('/healthz', methods=['GET'])
 def healthz():
