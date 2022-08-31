@@ -131,7 +131,7 @@ def index4():
             written_topics = topic_text.replace('\n', '<br>')
     return render_template('index4.html', **locals())
 
-@application.route('/gpt3_creations/generate_blogs', methods=["POST"])
+@application.route('/summarizer/gpt3_creations/generate_blogs', methods=["POST"])
 def generate_blogs():
     data = {}
     req_data = None
