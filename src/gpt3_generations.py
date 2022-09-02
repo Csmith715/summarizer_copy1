@@ -6,7 +6,7 @@ import re
 openai.api_key = config.OPENAI_API_KEY
 
 
-def write_blog(topic: str, keywords: str) -> str:
+def write_blog(topic: str, keywords: str):
     prompt = f'Write a long detailed blog about:\n{topic}\nKeywords:\n{keywords}\n\n\n'
     response = openai.Completion.create(
         engine="davinci-instruct-beta-v3",
@@ -18,9 +18,10 @@ def write_blog(topic: str, keywords: str) -> str:
         presence_penalty=0
     )
 
-    blog = response['choices'][0]['text'], response['usage']['total_tokens']
+    blog = response['choices'][0]['text']
+    tokens = response['usage']['total_tokens']
     blog = str(blog).strip('\n')
-    return blog
+    return blog, tokens
 
 
 class GPT3Creations:
