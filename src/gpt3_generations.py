@@ -6,7 +6,7 @@ import re
 openai.api_key = config.OPENAI_API_KEY
 
 
-def write_blog(topic, keywords):
+def write_blog(topic: str, keywords: str) -> str:
     prompt = f'Write a long detailed blog about:\n{topic}\nKeywords:\n{keywords}\n\n\n'
     response = openai.Completion.create(
         engine="davinci-instruct-beta-v3",
@@ -17,7 +17,10 @@ def write_blog(topic, keywords):
         frequency_penalty=0,
         presence_penalty=0
     )
-    return response['choices'][0]['text'], response['usage']['total_tokens']
+
+    blog = response['choices'][0]['text'], response['usage']['total_tokens']
+    blog = str(blog).strip('\n')
+    return blog
 
 
 class GPT3Creations:
@@ -89,28 +92,28 @@ class GPT3Creations:
         return selected_text
 
 
-def expand_blog_topics(selected_topic, topic, keywords, number_of_topics=5):
+def expand_blog_topics(selected_topic, topic, keywords, number_of_topics=10):
     num = str(number_of_topics+1)
     response = openai.Completion.create(
         model="text-davinci-002",
         prompt=f"Create an interesting blog title about:\n{topic}\nKeywords:\n{keywords}\n\n1. ",
         suffix=f"\n{num}. {selected_topic}\n\n\n",
         temperature=0.78,
-        max_tokens=150,
+        max_tokens=200,
         top_p=1,
         frequency_penalty=0.9,
         presence_penalty=1.63
     )
     return response['choices'][0]['text'], response['usage']['total_tokens']
 
-def expand_email_sl_topics(selected_topic, email_body, number_of_topics=5):
+def expand_email_sl_topics(selected_topic, email_body, number_of_topics=10):
     num = str(number_of_topics+1)
     response = openai.Completion.create(
         model="text-davinci-002",
         prompt=f"Create a list of email subject lines for the following email:\n\n{email_body}\n\n1.",
         suffix=f"\n{num}. {selected_topic}\n\n\n",
         temperature=0.78,
-        max_tokens=150,
+        max_tokens=200,
         top_p=1,
         frequency_penalty=0.9,
         presence_penalty=1.63
@@ -119,5 +122,6 @@ def expand_email_sl_topics(selected_topic, email_body, number_of_topics=5):
 
 def string_to_array(text: str) -> list:
     split_text = text.split('\n')
-    new_list = [re.sub('^\d. ', '', s) for s in split_text]
+    new_list = [re.sub('^\d+\.', '', s) for s in split_text]
+    new_list = [n.strip() for n in new_list]
     return new_list
