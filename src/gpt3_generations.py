@@ -124,5 +124,7 @@ def expand_email_sl_topics(selected_topic, email_body, number_of_topics=10):
 def string_to_array(text: str) -> list:
     split_text = text.split('\n')
     new_list = [re.sub('^\d+\.', '', s) for s in split_text]
-    new_list = [n.strip() for n in new_list]
+    new_list = [re.sub('^\d+.\.', '', s) for s in new_list]
+    new_list = [n.strip() for n in new_list if len(n) > 10]
+    new_list = [n.strip('"') for n in new_list]
     return new_list
