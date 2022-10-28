@@ -2,6 +2,7 @@ import openai
 import config
 import numpy as np
 import re
+import requests
 
 openai.api_key = config.OPENAI_API_KEY
 
@@ -24,17 +25,71 @@ def write_blog(topic: str, keywords: str):
     return blog, tokens
 
 
+def create_bullet_list(title: str, introduction: str) -> str:
+    post_data = {
+        "introduction": [introduction],
+        "title": title,
+        "bullet_points": {"Email Bullet List": []},
+        "more_info": [],
+        "keywords": [],
+        "accountId": "QWNjb3VudHwx",
+        "topics": []
+    }
+    result = requests.post('https://ai.dev.contentware.com/find-content/gpt3-creations', json=post_data)
+    bpoint_list = result.json()['bullet_points']
+    if bpoint_list:
+        final_list = bpoint_list[0]
+    else:
+        final_list = ''
+    return final_list
+
+
+def write_introduction(event_type: str, title: str, keywords: str):
+    prompt = f'Write an introduction summary about this {event_type}:\nTitle: {title}\nKeywords:\n{keywords}\n\n\n'
+    response = openai.Completion.create(
+        engine="davinci-instruct-beta-v3",
+        prompt=prompt,
+        temperature=0.7,
+        max_tokens=200,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+
+    introduction = response['choices'][0]['text']
+    tokens = response['usage']['total_tokens']
+    introduction = str(introduction).strip('\n')
+    return introduction, tokens
+
+
+def create_landing_page(event_type: str, title: str, keywords: str):
+    intro, tokes = write_introduction(event_type, title, keywords)
+    bullet_list = create_bullet_list(title, intro)
+    landing_page = f'{intro}\n\n{bullet_list}'
+    return landing_page, tokes
+
+
 class GPT3Creations:
     def __init__(self):
         self.ignore_list = ['\n', 'tp_tokens', 'Q', ':']
+        # self.topic = ''
+        # self.keywords = ''
+        # self.event_type = ''
         self.function_dict = {
             "BLOG_TEXT": write_blog,
             "BLOG_TOPICS": self.generate_blog_topics,
-            "EMAIL_SUBJECT_LINES": self.write_email_subject_lines
+            "EMAIL_SUBJECT_LINES": self.write_email_subject_lines,
+            "LANDING_PAGE": create_landing_page
         }
 
-    def select_and_write(self, content_type, topic, keywords):
-        text, tokens = self.function_dict[content_type](topic, keywords)
+    def select_and_write(self, content_type, topic, keywords, event_type):
+        # self.topic = topic
+        # self.keywords = keywords
+        # self.event_type = event_type
+        if event_type:
+            text, tokens = self.function_dict[content_type](event_type, topic, keywords)
+        else:
+            text, tokens = self.function_dict[content_type](topic, keywords)
         return text, tokens
 
     def generate_blog_topics(self, topic, keywords):

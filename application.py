@@ -140,7 +140,12 @@ def generate_blogs():
     g_type = req_data['type']
     topic = req_data['description']
     keywords = req_data['keywords']
-    data['content'], data['tokens'] = GPT3Creations().select_and_write(g_type, topic, keywords)
+    if 'event_type' in req_data.keys():
+        event_type = req_data['event_type']
+    else:
+        event_type = ''
+    logger.info('Creating GPT3 content')
+    data['content'], data['tokens'] = GPT3Creations().select_and_write(g_type, topic, keywords, event_type)
     logger.info('GPT3 Content Created')
 
     return flask.jsonify(data)
