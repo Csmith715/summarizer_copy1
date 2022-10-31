@@ -3,7 +3,9 @@ import config
 import numpy as np
 import re
 import requests
+import logging
 
+logger = logging.getLogger()
 openai.api_key = config.OPENAI_API_KEY
 
 
@@ -43,6 +45,23 @@ def create_bullet_list(title: str, introduction: str) -> str:
         final_list = ''
     return final_list
 
+# def bullet_prompt(self) -> list:
+#     # n is set to 15 to create 15 outputs
+#     text = self.title_intro.strip('\n')
+#     response = openai.Completion.create(
+#         model='curie:ft-contentware-2022-10-04-15-51-24',
+#         prompt=f"{text}\n\nA concise learning objective:\n\n",
+#         n=15,
+#         temperature=0.7,
+#         max_tokens=25,
+#         top_p=1,
+#         frequency_penalty=0.5,
+#         presence_penalty=0.2,
+#         stop=["\n", ". ", "?", "!"]
+#     )
+#     out_array = [r['text'].strip('\n') for r in response['choices']]
+#     return out_array
+
 
 def write_introduction(event_type: str, title: str, keywords: str):
     prompt = f'Write an introduction summary about this {event_type}:\nTitle: {title}\nKeywords:\n{keywords}\n\n\n'
@@ -63,8 +82,11 @@ def write_introduction(event_type: str, title: str, keywords: str):
 
 
 def create_landing_page(event_type: str, title: str, keywords: str):
+    logger.info('Writing introduction')
     intro, tokes = write_introduction(event_type, title, keywords)
+    logger.info('Introduction complete, creating bullets')
     bullet_list = create_bullet_list(title, intro)
+    logger.info('Bullets Complete')
     landing_page = f'{intro}\n\n{bullet_list}'
     return landing_page, tokes
 
