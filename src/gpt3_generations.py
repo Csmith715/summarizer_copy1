@@ -74,7 +74,7 @@ def create_bullet_list(title: str, introduction: str) -> str:
 #         prompt = f"Write a LinkedIn post for a {ptype} based on the following content:\n\n{promotion_text}\n\n"
 #     return prompt
 
-def social_media_prompt(channel: str, title: str, keywords: str) -> list:
+def social_media_prompt(channel: str, title: str, keywords: str):
     # n is set to 5 to create 5 outputs
     text = f'{title}\nKeywords: {keywords}'
     response = openai.Completion.create(
@@ -88,7 +88,8 @@ def social_media_prompt(channel: str, title: str, keywords: str) -> list:
         presence_penalty=1
     )
     out_array = [r['text'].strip('\n') for r in response['choices']]
-    return out_array
+    tokens = response['usage']['total_tokens']
+    return out_array, tokens
 
 def write_introduction(event_type: str, title: str, keywords: str):
     prompt = f'Write an introduction summary about this {event_type}:\nTitle: {title}\nKeywords:\n{keywords}\n\n\n'
