@@ -140,8 +140,8 @@ def generate_blogs():
     g_type = req_data['type']
     topic = req_data['description']
     keywords = req_data['keywords']
-    if 'event_type' in req_data.keys():
-        event_type = req_data['event_type']
+    if 'channel' in req_data.keys():
+        event_type = req_data['channel']
     else:
         event_type = ''
     logger.info('Creating GPT3 content')
