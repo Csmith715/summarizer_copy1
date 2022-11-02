@@ -75,21 +75,26 @@ def create_bullet_list(title: str, introduction: str) -> str:
 #     return prompt
 
 def social_media_prompt(channel: str, title: str, keywords: str):
-    # n is set to 5 to create 5 outputs
+    # n is set to 10 to create 10 outputs
     text = f'{title}\nKeywords: {keywords}'
     response = openai.Completion.create(
-        model='curie:ft-contentware-2022-06-01-19-09-59',
+        # model='curie:ft-contentware-2022-06-01-19-09-59',
+        engine="davinci-instruct-beta-v3",
         prompt=f"Write a {channel} post based on the following content:\n\n{text}\n\n",
-        n=5,
+        n=10,
         temperature=0.5,
         max_tokens=120,
         top_p=1,
         frequency_penalty=1,
-        presence_penalty=1
+        presence_penalty=1,
+        # stop=["\n"]
     )
     out_array = [r['text'].strip('\n') for r in response['choices']]
+    lr = [len(r) for r in out_array]
+    sorted_array = [x for _, x in sorted(zip(lr, out_array))]
+    final_array = sorted_array[:2] + [sorted_array[4]] + sorted_array[8:]
     tokens = response['usage']['total_tokens']
-    return out_array, tokens
+    return final_array, tokens
 
 def write_introduction(event_type: str, title: str, keywords: str):
     prompt = f'Write an introduction summary about this {event_type}:\nTitle: {title}\nKeywords:\n{keywords}\n\n\n'
