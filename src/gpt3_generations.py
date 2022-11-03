@@ -61,6 +61,7 @@ def create_bullet_list(title: str, introduction: str) -> str:
         stop=["\n", ". ", "?", "!"]
     )
     out_array = [r['text'].strip('\n') for r in response['choices']]
+    out_array = [f'- {x}' for x in out_array]
     final_list = '\n'.join(out_array)
     final_list = f'Key Takeaways:\n{final_list}'
 
