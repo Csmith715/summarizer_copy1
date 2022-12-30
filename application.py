@@ -9,7 +9,7 @@ import torch
 from logging.config import fileConfig
 import blog
 from blog import MultilineGenerations
-from src.gpt3_generations import GPT3Creations
+from src.gpt3_generations import GPT3Creations, NewGPT3Content
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
@@ -148,6 +148,17 @@ def generate_blogs():
     data['content'], data['tokens'] = GPT3Creations().select_and_write(g_type, topic, keywords, event_type)
     logger.info('GPT3 Content Created')
 
+    return flask.jsonify(data)
+
+@application.route('/summarizer/social_media_posts', methods=["POST"])
+def create_social_media():
+    data = {}
+    req_data = None
+    if flask.request.content_type == 'application/json':
+        req_data = flask.request.get_json()
+    if req_data:
+        new_gpt3 = NewGPT3Content(req_data)
+        data['content'] = new_gpt3.generate_social_media_content()
     return flask.jsonify(data)
 
 @application.route('/healthz', methods=['GET'])

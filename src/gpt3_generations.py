@@ -240,3 +240,56 @@ def string_to_array(text: str) -> list:
     new_list = [n.strip() for n in new_list if len(n) > 10]
     new_list = [n.strip('"') for n in new_list]
     return new_list
+
+class NewGPT3Content:
+    def __init__(self, data: dict):
+        self.title = data['title']
+        self.summary = data['summary']
+        self.focus = data['snippet']
+        self.date = data['date']
+        self.tone = data['tone']
+        self.sm_type = data['social media type']
+        self.final_prompt = ''
+
+    def generate_social_media_content(self):
+        self.create_social_media_prompt()
+        posts = self.write_social_media()
+        return posts
+
+    def create_social_media_prompt(self):
+        prompt_a = self.craft_prompt()
+        if self.tone and self.sm_type:
+            prompt_b = f'Create a {self.tone} {self.sm_type} post from this content:\n'
+        elif self.tone and not self.sm_type:
+            prompt_b = f'Create a {self.tone} social media post from this content:\n'
+        elif self.sm_type and not self.tone:
+            prompt_b = f'Create a {self.sm_type} post from this content:\n'
+        else:
+            prompt_b = 'Create a social media post from this content\n'
+        self.final_prompt = f'{prompt_a}\n{prompt_b}'
+
+    def craft_prompt(self):
+        prompt = ''
+        if self.title:
+            prompt = f'Title: {self.title}\n'
+        if self.summary:
+            prompt = f'{prompt}Summary: {self.summary}\n'
+        if self.focus:
+            prompt = f'{prompt}Focus: {self.focus}\n'
+        if self.date:
+            prompt = f'{prompt}Date: {self.date}\n'
+        return prompt
+
+    def write_social_media(self) -> list:
+        response = openai.Completion.create(
+            model="text-davinci-003",
+            prompt=self.final_prompt,
+            temperature=0.7,
+            max_tokens=256,
+            top_p=1,
+            frequency_penalty=0.25,
+            presence_penalty=0.25,
+            n=5
+        )
+        out_array = [r['text'].strip('\n') for r in response['choices']]
+        return out_array
