@@ -292,4 +292,13 @@ class NewGPT3Content:
             n=5
         )
         out_array = [r['text'].strip('\n') for r in response['choices']]
-        return out_array
+        cleaned_array = [remove_sm_hashtags(s_post) for s_post in out_array]
+        return cleaned_array
+
+def remove_sm_hashtags(post: str):
+    clean_text = f'{post} '
+    fi = re.finditer('#(.*?) ', clean_text)
+    if fi:
+        for f in fi:
+            clean_text = clean_text.replace(f.group(), '')
+    return clean_text.strip()
