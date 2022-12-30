@@ -67,7 +67,7 @@ def generatequestions():
 @application.route('/summarizer/updateCTA', methods=['GET'])
 def updatecta():
     mfuncs = ModelFuncs(cta_path, cta_root_path, bucket_name)
-    mfuncs.CongigureCTA()
+    mfuncs.configure_cta()
     return flask.Response(response='done', status=200, mimetype='text/plain')
 
 @application.route('/summarizer/generate_blogs', methods=["GET", "POST"])

@@ -7,12 +7,12 @@ import json
 import pickle
 # import pandas as pd
 import logging
-from sentence_transformers import SentenceTransformer
+# from sentence_transformers import SentenceTransformer
 
 bucket_name = os.getenv('BUCKET_NAME', 'contentware-nlp')
 logger = logging.getLogger()
 download_s3_folder(bucket_name, 'question-generation')
-st_model = SentenceTransformer('all-MiniLM-L6-v2')
+# st_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 rule_cats = [
     'CTA_Take Action (Long)',
@@ -32,14 +32,14 @@ rule_cats = [
     'CTA Day of  Reminder Long (Social Card)'
 ]
 
-def make_cta_embeddings(rules: dict):
-    cta_phraseologies = []
-    for r in rule_cats:
-        for k in rules.keys():
-            values = [x[0] for x in rules[k][r]]
-            cta_phraseologies.extend(values)
-    cta_emb = st_model.encode(cta_phraseologies)
-    return cta_emb
+# def make_cta_embeddings(rules: dict):
+#     cta_phraseologies = []
+#     for r in rule_cats:
+#         for k in rules.keys():
+#             values = [x[0] for x in rules[k][r]]
+#             cta_phraseologies.extend(values)
+#     cta_emb = st_model.encode(cta_phraseologies)
+#     return cta_emb
 
 def replace_tokens(dod: dict, event_type: str) -> dict:
     embedding_dict = {}
@@ -105,7 +105,7 @@ class ModelFuncs:
         del new_rule_dict['Noun Rule #2']
         return new_rule_dict
 
-    def CongigureCTA(self):
+    def configure_cta(self):
         download_file(self.cpath, 'campaign-metadata.json', self.buck_name)
         # Load JSON CTA/Wrapper Info
         with open(os.path.join(self.crpath, self.cpath, 'campaign-metadata.json')) as f:
