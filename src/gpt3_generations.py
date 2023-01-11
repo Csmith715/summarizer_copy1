@@ -3,6 +3,7 @@ import config
 import numpy as np
 import re
 import logging
+from nltk.tokenize import sent_tokenize
 
 logger = logging.getLogger()
 openai.api_key = config.OPENAI_API_KEY
@@ -242,29 +243,38 @@ def string_to_array(text: str) -> list:
 
 class NewGPT3Content:
     def __init__(self, data: dict):
-        self.title = data['title']
-        self.summary = data['summary']
-        self.focus = data['snippet']
+        self.title = data['title']  # string
+        self.summary = data['summary']  # string
+        # self.focus = data['snippet']
+        self.bullets = data['snippets']  # array
         self.date = data['date']
-        self.tone = data['tone']
+        # self.tone = data['tone']
+        self.promotion_type = data['promotion type']
         self.sm_type = data['social media type']
         self.final_prompt = ''
 
     def generate_social_media_content(self):
         self.create_social_media_prompt()
         posts = self.write_social_media()
+        if self.bullets:
+            posts = self.scrub_output(posts)
         return posts
 
     def create_social_media_prompt(self):
         prompt_a = self.craft_prompt()
-        if self.tone and self.sm_type:
-            prompt_b = f'Create a {self.tone} {self.sm_type} post from this content:\n'
-        elif self.tone and not self.sm_type:
-            prompt_b = f'Create a {self.tone} social media post from this content:\n'
-        elif self.sm_type and not self.tone:
+        if self.sm_type:
             prompt_b = f'Create a {self.sm_type} post from this content:\n'
+        # if self.tone and self.sm_type:
+        #     prompt_b = f'Create a {self.tone} {self.sm_type} post from this content:\n'
+        # elif self.tone and not self.sm_type:
+        #     prompt_b = f'Create a {self.tone} social media post from this content:\n'
+        # elif self.sm_type and not self.tone:
+        #     prompt_b = f'Create a {self.sm_type} post from this content:\n'
+        # prompt = f"Title: {t}\nSummary: {s}\nPromotion Type: Webinar\n{foci}\nCreate a varied series of long Facebook posts from this content:\n\nFocus 1:"
         else:
             prompt_b = 'Create a social media post from this content\n'
+        if self.bullets:
+            prompt_b = f'{prompt_b}\nFocus 1:'
         self.final_prompt = f'{prompt_a}\n{prompt_b}'
 
     def craft_prompt(self):
@@ -273,10 +283,15 @@ class NewGPT3Content:
             prompt = f'Title: {self.title}\n'
         if self.summary:
             prompt = f'{prompt}Summary: {self.summary}\n'
-        if self.focus:
-            prompt = f'{prompt}Focus: {self.focus}\n'
         if self.date:
             prompt = f'{prompt}Date: {self.date}\n'
+        # if self.focus:
+        #     prompt = f'{prompt}Focus: {self.focus}\n'
+        if self.promotion_type:
+            prompt = f'{prompt}Promotion Type: {self.promotion_type}\n'
+        if self.bullets:
+            foci = self.arrange_focal_points()
+            prompt = f'{prompt}{foci}\n'
         return prompt
 
     def write_social_media(self) -> list:
@@ -292,7 +307,34 @@ class NewGPT3Content:
         )
         out_array = [r['text'].strip('\n') for r in response['choices']]
         cleaned_array = [remove_sm_hashtags(s_post) for s_post in out_array]
-        return cleaned_array
+        final_array = clean_gpt3_output(cleaned_array)
+
+        return final_array
+
+    def scrub_output(self, out_posts: list) -> list:
+        new_clean_posts = []
+        for post in out_posts:
+            first_sentence = sent_tokenize(post)[0]
+            first_sentence = first_sentence.split('\n')[0]
+            temp_list = [f.strip('.').strip('!').strip('?').lower() for f in self.bullets]
+            new_text = ''
+            for t in temp_list:
+                ss = f'^{t}'
+                search_result = re.search(ss, first_sentence.lower())
+                if search_result and len(first_sentence[search_result.end():]) < 3:
+                    new_text = post[search_result.end():]
+                    new_text = new_text[1:] if new_text[0] == '.' else new_text
+                    new_text = new_text.strip().strip('\n')
+                    new_text = re.sub('^\[Post \d\] ', '', new_text)
+            if new_text:
+                new_clean_posts.append(new_text)
+            else:
+                new_clean_posts.append(post)
+        return new_clean_posts
+
+    def arrange_focal_points(self):
+        focal_list = [f'Focus {i + 1}: {f}\n' for i, f in enumerate(self.bullets)]
+        return ''.join(focal_list)
 
 def remove_sm_hashtags(post: str):
     clean_text = f'{post} '
@@ -301,3 +343,13 @@ def remove_sm_hashtags(post: str):
         for f in fi:
             clean_text = clean_text.replace(f.group(), '')
     return clean_text.strip()
+
+def clean_gpt3_output(output_array: list) -> list:
+    cleaned = []
+    for out in output_array:
+        rs = re.split('\nFocus \d+:', out)
+        crs = [r.strip('\n') for r in rs]
+        frs = [remove_sm_hashtags(c.strip()) for c in crs if c]
+        cleaned.extend(frs)
+    cleaned = list(set(cleaned))
+    return cleaned
