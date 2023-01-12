@@ -263,7 +263,7 @@ class NewGPT3Content:
     def create_social_media_prompt(self):
         prompt_a = self.craft_prompt()
         if self.sm_type:
-            prompt_b = f'Create a {self.sm_type} post from this content:\n'
+            prompt_b = f'Create a varied series of {self.sm_type} posts from this content:\n'
         # if self.tone and self.sm_type:
         #     prompt_b = f'Create a {self.tone} {self.sm_type} post from this content:\n'
         # elif self.tone and not self.sm_type:
@@ -272,7 +272,7 @@ class NewGPT3Content:
         #     prompt_b = f'Create a {self.sm_type} post from this content:\n'
         # prompt = f"Title: {t}\nSummary: {s}\nPromotion Type: Webinar\n{foci}\nCreate a varied series of long Facebook posts from this content:\n\nFocus 1:"
         else:
-            prompt_b = 'Create a social media post from this content\n'
+            prompt_b = 'Create a varied series of social media posts from this content\n'
         if self.bullets:
             prompt_b = f'{prompt_b}\nFocus 1:'
         self.final_prompt = f'{prompt_a}\n{prompt_b}'
@@ -306,10 +306,10 @@ class NewGPT3Content:
             n=5
         )
         out_array = [r['text'].strip('\n') for r in response['choices']]
+        out_array = clean_gpt3_output(out_array)
         cleaned_array = [remove_sm_hashtags(s_post) for s_post in out_array]
-        final_array = clean_gpt3_output(cleaned_array)
 
-        return final_array
+        return cleaned_array
 
     def scrub_output(self, out_posts: list) -> list:
         new_clean_posts = []
