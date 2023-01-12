@@ -263,7 +263,7 @@ class NewGPT3Content:
     def create_social_media_prompt(self):
         prompt_a = self.craft_prompt()
         if self.sm_type:
-            prompt_b = f'Create a varied series of {self.sm_type} posts from this content:\n'
+            prompt_b = f'Create a varied series of long {self.sm_type} posts from this content:\n'
         # if self.tone and self.sm_type:
         #     prompt_b = f'Create a {self.tone} {self.sm_type} post from this content:\n'
         # elif self.tone and not self.sm_type:
@@ -272,7 +272,7 @@ class NewGPT3Content:
         #     prompt_b = f'Create a {self.sm_type} post from this content:\n'
         # prompt = f"Title: {t}\nSummary: {s}\nPromotion Type: Webinar\n{foci}\nCreate a varied series of long Facebook posts from this content:\n\nFocus 1:"
         else:
-            prompt_b = 'Create a varied series of social media posts from this content\n'
+            prompt_b = 'Create a varied series of long social media posts from this content\n'
         if self.bullets:
             prompt_b = f'{prompt_b}\nFocus 1:'
         self.final_prompt = f'{prompt_a}\n{prompt_b}'
