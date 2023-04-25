@@ -104,7 +104,7 @@ def generatequestions():
     req_data = None
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
-    inputtext = req_data['text']
+    inputtext = req_data.get('text', '')
     logger.info('Generating Questions')
     data['generated question'] = question_model.predict(inputtext)
     logger.info('Questions Created')
