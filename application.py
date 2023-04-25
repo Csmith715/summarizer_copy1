@@ -10,26 +10,23 @@ from logging.config import fileConfig
 import blog
 from blog import MultilineGenerations
 from src.gpt3_generations import GPT3Creations, NewGPT3Content
-from src.openai_creations import SocialGenerations
-from config import email_cta_creations
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
 
-def page_not_found():
+def page_not_found(e):
     return render_template('404.html'), 404
 
 
 application = flask.Flask(__name__)
 
 application.register_error_handler(404, page_not_found)
-question_model = None
+model = None
 def load_model():
-    global question_model
-    if not question_model:
+    global model
+    if not model:
         try:
-            logger.info("Loading Seq2Seq model")
-            question_model = Seq2SeqModel(
+            model = Seq2SeqModel(
                 encoder_decoder_type="bart",
                 encoder_decoder_name=os.path.join(qg_root_path, qg_path),
                 use_cuda=torch.cuda.is_available()
@@ -37,12 +34,12 @@ def load_model():
         except Exception as e:
             # for local testing
             print(e)
-            question_model = Seq2SeqModel(
+            model = Seq2SeqModel(
                 encoder_decoder_type="bart",
                 encoder_decoder_name='/Users/micksmith/Contentware_Local_Models/question_generation',
                 use_cuda=torch.cuda.is_available()
             )
-        logger.info('Question Model Loaded')
+        logger.info('Model Loaded')
 
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
@@ -54,64 +51,15 @@ def summarizer():
     data['summarized text'] = intext
     return flask.jsonify(data)
 
-@application.route('/summarizer/question_gpt_creations', methods=['POST'])
-def question_gpt_creations():
-    """
-    Parameters: {
-            snippets (list): An array of snippets for question, email subject line, and Instagram generation
-            title (str): Title of the job passed
-            introduction (str): The introduction paragraph passed
-            promotion_type (str): The event label or type
-            }
-    Returns: {
-        generated_questions (list): An array of questions created using a Simple Transformer model,
-        email_subject_lines (list): An array of email subject lines
-        instagram_posts (list): An array of generated Instagram posts
-        }
-    """
-    data = {}
-    req_data = None
-    if flask.request.content_type == 'application/json':
-        req_data = flask.request.get_json()
-    snips = req_data.get('snippets', [])
-    title = req_data.get('title', '')
-    intro = req_data.get('introduction', '')
-    promo = req_data.get('promotion_type', '')
-    logger.info('Generating Questions')
-    so_gen = SocialGenerations(snips, title, intro, promo, question_model)
-    sog_results = so_gen.create_socials()
-    data['generated_question'] = sog_results['summarizer']
-    data['email_subject_lines'] = sog_results['davinci:ft-contentware:esl-generation-2023-04-21-16-37-03']
-    data['instagram_posts'] = sog_results['davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04']
-    logger.info('Questions, ESL, & Instagram Posts Created')
-
-    return flask.jsonify(data)
-
-
 @application.route('/summarizer/generatequestions', methods=['POST'])
 def generatequestions():
-    """
-    Parameters: {
-            text (list): An array of snippets for question generation,
-            email_cta_prompt (str): A string to be passed to an OpenAI call
-            }
-    Returns: {
-        generated question (list): An array of questions created using a Simple Transformer model,
-        email_ctas (list): An array of email call to action texts
-        }
-    """
     data = {}
     req_data = None
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
-    inputtext = req_data.get('text', '')
-    email_cta_text = req_data.get('email_cta_prompt', '')
+    inputtext = req_data['text']
     logger.info('Generating Questions')
-    if question_model:
-        data['generated question'] = question_model.predict(inputtext)
-    else:
-        data['generated question'] = []
-    data['email_ctas'] = email_cta_creations(email_cta_text)
+    data['generated question'] = model.predict(inputtext)
     logger.info('Questions Created')
 
     return flask.jsonify(data)
