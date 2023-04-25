@@ -10,7 +10,7 @@ from logging.config import fileConfig
 import blog
 from blog import MultilineGenerations
 from src.gpt3_generations import GPT3Creations, NewGPT3Content
-from src.openai_creations import SocialGenerations
+# from src.openai_creations import SocialGenerations
 # from config import email_cta_creations
 
 fileConfig('logging.conf')
@@ -54,38 +54,38 @@ def summarizer():
     data['summarized text'] = intext
     return flask.jsonify(data)
 
-@application.route('/summarizer/question_gpt_creations', methods=['POST'])
-def question_gpt_creations():
-    """
-    Parameters: {
-            snippets (list): An array of snippets for question, email subject line, and Instagram generation
-            title (str): Title of the job passed
-            introduction (str): The introduction paragraph passed
-            promotion_type (str): The event label or type
-            }
-    Returns: {
-        generated_questions (list): An array of questions created using a Simple Transformer model,
-        email_subject_lines (list): An array of email subject lines
-        instagram_posts (list): An array of generated Instagram posts
-        }
-    """
-    data = {}
-    req_data = None
-    if flask.request.content_type == 'application/json':
-        req_data = flask.request.get_json()
-    snips = req_data.get('snippets', [])
-    title = req_data.get('title', '')
-    intro = req_data.get('introduction', '')
-    promo = req_data.get('promotion_type', '')
-    logger.info('Generating Questions')
-    so_gen = SocialGenerations(snips, title, intro, promo, question_model)
-    sog_results = so_gen.create_socials()
-    data['generated_question'] = sog_results['summarizer']
-    data['email_subject_lines'] = sog_results['davinci:ft-contentware:esl-generation-2023-04-21-16-37-03']
-    data['instagram_posts'] = sog_results['davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04']
-    logger.info('Questions, ESL, & Instagram Posts Created')
-
-    return flask.jsonify(data)
+# @application.route('/summarizer/question_gpt_creations', methods=['POST'])
+# def question_gpt_creations():
+#     """
+#     Parameters: {
+#             snippets (list): An array of snippets for question, email subject line, and Instagram generation
+#             title (str): Title of the job passed
+#             introduction (str): The introduction paragraph passed
+#             promotion_type (str): The event label or type
+#             }
+#     Returns: {
+#         generated_questions (list): An array of questions created using a Simple Transformer model,
+#         email_subject_lines (list): An array of email subject lines
+#         instagram_posts (list): An array of generated Instagram posts
+#         }
+#     """
+#     data = {}
+#     req_data = None
+#     if flask.request.content_type == 'application/json':
+#         req_data = flask.request.get_json()
+#     snips = req_data.get('snippets', [])
+#     title = req_data.get('title', '')
+#     intro = req_data.get('introduction', '')
+#     promo = req_data.get('promotion_type', '')
+#     logger.info('Generating Questions')
+#     so_gen = SocialGenerations(snips, title, intro, promo, question_model)
+#     sog_results = so_gen.create_socials()
+#     data['generated_question'] = sog_results['summarizer']
+#     data['email_subject_lines'] = sog_results['davinci:ft-contentware:esl-generation-2023-04-21-16-37-03']
+#     data['instagram_posts'] = sog_results['davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04']
+#     logger.info('Questions, ESL, & Instagram Posts Created')
+#
+#     return flask.jsonify(data)
 
 
 @application.route('/summarizer/generatequestions', methods=['POST'])
