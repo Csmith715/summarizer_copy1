@@ -4,7 +4,6 @@ import concurrent.futures
 import re
 # import random
 from config import url_string, emoji_pattern, OPENAI_API_KEY
-# from application import question_model
 
 logger = logging.getLogger()
 openai.api_key = OPENAI_API_KEY
@@ -21,7 +20,7 @@ class SocialGenerations:
         self.result_dict = {
             "davinci:ft-contentware:esl-generation-2023-04-21-16-37-03": [],            # 'email subject lines'
             "davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04": [],   # 'Instagram'
-            "summarizer": []
+            "summarizer": []    # Summarizer
         }
         self.question_model = seq2seq_model
 
@@ -79,8 +78,10 @@ class SocialGenerations:
                 self.result_dict[model].extend(clean_texts)
 
     def question_generator(self) -> dict:
+        logger.info('Generating Questions')
         try:
             questions = self.question_model.predict(self.snippets)
+            logger.info('Questions Completed')
         except Exception as e:
             logger.info(e)
             questions = []
