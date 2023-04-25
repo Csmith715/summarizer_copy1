@@ -1,7 +1,6 @@
 import boto3
 import os
 import pathlib
-# import logging
 
 cta_root_path = os.getenv('CTA_ROOT_PATH', '/tmp')
 qg_root_path = os.getenv('QG_ROOT_PATH', '/tmp')
