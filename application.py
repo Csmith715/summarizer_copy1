@@ -107,10 +107,7 @@ def generatequestions():
     inputtext = req_data.get('text', '')
     email_cta_text = req_data.get('email_cta_prompt', '')
     logger.info('Generating Questions')
-    if question_model:
-        data['generated question'] = question_model.predict(inputtext)
-    else:
-        data['generated question'] = []
+    data['generated question'] = question_model.predict(inputtext)
     data['email_ctas'] = email_cta_creations(email_cta_text)
     logger.info('Questions Created')
 
