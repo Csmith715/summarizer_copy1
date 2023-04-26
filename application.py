@@ -11,7 +11,6 @@ import blog
 from blog import MultilineGenerations
 from src.gpt3_generations import GPT3Creations, NewGPT3Content
 from src.openai_creations import SocialGenerations
-from config import email_cta_creations
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
@@ -105,10 +104,8 @@ def generatequestions():
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
     inputtext = req_data.get('text', '')
-    email_cta_text = req_data.get('email_cta_prompt', '')
     logger.info('Generating Questions')
     data['generated question'] = question_model.predict(inputtext)
-    data['email_ctas'] = email_cta_creations(email_cta_text)
     logger.info('Questions Created')
 
     return flask.jsonify(data)
