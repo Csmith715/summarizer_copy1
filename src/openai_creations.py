@@ -2,7 +2,6 @@ import openai
 import logging
 import concurrent.futures
 import re
-# import random
 from config import url_string, emoji_pattern, OPENAI_API_KEY
 
 logger = logging.getLogger()
@@ -10,8 +9,17 @@ openai.api_key = OPENAI_API_KEY
 
 
 class SocialGenerations:
-    def __init__(self, snippets: list, job_title: str, introduction: str, promotion_type: str, seq2seq_model):
+    def __init__(
+            self,
+            n_questions: list,
+            snippets: list,
+            job_title: str,
+            introduction: str,
+            promotion_type: str,
+            seq2seq_model
+    ):
         self.chunked_snippets = list(divide_chunks(snippets, 5))
+        self.non_questions = n_questions
         self.snippets = snippets
         self.title = job_title
         self.summary = introduction
@@ -80,7 +88,7 @@ class SocialGenerations:
     def question_generator(self) -> dict:
         logger.info('Generating Questions')
         try:
-            questions = self.question_model.predict(self.snippets)
+            questions = self.question_model.predict(self.non_questions)
             logger.info('Questions Completed')
         except Exception as e:
             logger.info(e)

@@ -73,11 +73,12 @@ def question_gpt_creations():
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
     snips = req_data.get('snippets', [])
+    non_questions = req_data.get('non_questions', [])
     title = req_data.get('title', '')
     intro = req_data.get('introduction', '')
     promo = req_data.get('promotion_type', '')
     logger.info('Generating Questions')
-    so_gen = SocialGenerations(snips, title, intro, promo, question_model)
+    so_gen = SocialGenerations(non_questions, snips, title, intro, promo, question_model)
     sog_results = so_gen.create_socials()
     data['generated_question'] = sog_results['summarizer']
     data['email_subject_lines'] = sog_results['davinci:ft-contentware:esl-generation-2023-04-21-16-37-03']
