@@ -27,25 +27,6 @@ def write_blog(topic: str, keywords: str):
     blog = str(blog).strip('\n')
     return blog, tokens
 
-
-# def create_bullet_list(title: str, introduction: str) -> str:
-#     post_data = {
-#         "introduction": [introduction],
-#         "title": title,
-#         "bullet_points": {"Email Bullet List": []},
-#         "more_info": [],
-#         "keywords": [],
-#         "accountId": "QWNjb3VudHwx",
-#         "topics": []
-#     }
-#     result = requests.post('https://ai.dev.contentware.com/find-content/gpt3-creations', json=post_data)
-#     bpoint_list = result.json()['bullet_points']
-#     if bpoint_list:
-#         final_list = bpoint_list[0]
-#     else:
-#         final_list = ''
-#     return final_list
-
 def create_bullet_list(title: str, introduction: str) -> str:
     # n is set to 5 to create 5 outputs
     text = f'{title}\n{introduction}'
@@ -128,9 +109,6 @@ def create_landing_page(event_type: str, title: str, keywords: str):
 class GPT3Creations:
     def __init__(self):
         self.ignore_list = ['\n', 'tp_tokens', 'Q', ':']
-        # self.topic = ''
-        # self.keywords = ''
-        # self.event_type = ''
         self.function_dict = {
             "BLOG_TEXT": write_blog,
             "BLOG_TOPICS": self.generate_blog_topics,
@@ -140,9 +118,6 @@ class GPT3Creations:
         }
 
     def select_and_write(self, content_type, topic, keywords, event_type):
-        # self.topic = topic
-        # self.keywords = keywords
-        # self.event_type = event_type
         if event_type:
             text, tokens = self.function_dict[content_type](event_type, topic, keywords)
         else:

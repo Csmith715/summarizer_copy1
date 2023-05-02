@@ -184,15 +184,16 @@ def generate_blogs():
     req_data = None
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
-    g_type = req_data['type']
-    topic = req_data['description']
-    keywords = req_data['keywords']
-    if 'channel' in req_data.keys():
-        event_type = req_data['channel']
+    g_type = req_data.get('type', '')
+    topic = req_data.get('description', '')
+    keywords = req_data.get('keywords', '')
+    event_type = req_data.get('channel', '')
+    question_text = req_data.get('question', '')
+    logger.info('Creating GPT3/GPT4 content')
+    if question_text:
+        data['content'] = generate_chat_text(question_text)
     else:
-        event_type = ''
-    logger.info('Creating GPT3 content')
-    data['content'], data['tokens'] = GPT3Creations().select_and_write(g_type, topic, keywords, event_type)
+        data['content'], data['tokens'] = GPT3Creations().select_and_write(g_type, topic, keywords, event_type)
     logger.info('GPT3 Content Created')
 
     return flask.jsonify(data)
