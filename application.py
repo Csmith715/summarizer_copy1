@@ -10,7 +10,7 @@ from logging.config import fileConfig
 import blog
 from blog import MultilineGenerations
 from src.gpt3_generations import GPT3Creations, NewGPT3Content
-from src.openai_creations import SocialGenerations
+from src.openai_creations import SocialGenerations, generate_chat_text
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
@@ -206,6 +206,18 @@ def create_social_media():
     if req_data:
         new_gpt3 = NewGPT3Content(req_data)
         data['content'] = new_gpt3.generate_social_media_content()
+    return flask.jsonify(data)
+
+@application.route('/summarizer/chat', methods=["POST"])
+def create_chat_response():
+    data = {}
+    req_data = None
+    if flask.request.content_type == 'application/json':
+        req_data = flask.request.get_json()
+    if req_data:
+        # sys_text = req_data.get('system_text', '')
+        user_text = req_data.get('user_question', '')
+        data['content'] = generate_chat_text(user_text)
     return flask.jsonify(data)
 
 @application.route('/healthz', methods=['GET'])

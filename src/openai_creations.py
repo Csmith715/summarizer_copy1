@@ -161,3 +161,19 @@ def drop_last(esl_post: str) -> str:
     sesl = esl_post.split('\n')
     fixed_esl = '\n'.join(sesl[:-1])
     return fixed_esl
+
+def generate_chat_text(user_text, system_text='You are a helpful assistant'):
+    prompt_message = [
+        {"role": "system", "content": system_text},
+        {"role": "user", "content": user_text}
+    ]
+    try:
+        chat_response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=prompt_message,
+            n=1
+        )
+        final_response = chat_response.choices[0]['message']['content']
+    except Exception as e:
+        final_response = f"ChatGPT isn't working right now. Here is the error they sent us:\n{e}"
+    return final_response
