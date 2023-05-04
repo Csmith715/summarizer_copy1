@@ -133,7 +133,7 @@ def clean_gpt_text(post: str) -> str:
     clean_text = re.sub(emoji_pattern, ' ', clean_text)
     clean_text = re.sub(r'^\d+\. ', '', clean_text)
     clean_text = clean_text.replace('[link]', '').replace('[Link]', '').replace('[Link to article]', '').replace('[LINK]', '').replace('\u200d', '').replace('  ', ' ')
-    clean_text = clean_text.replace('  ', ' ')
+    clean_text = clean_text.replace('  ', ' ').replace('"', '')
     clean_text = remove_sm_hashtags(clean_text)
     return clean_text.strip()
 
