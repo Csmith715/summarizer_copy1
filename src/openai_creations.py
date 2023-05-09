@@ -168,12 +168,19 @@ def generate_chat_text(user_text, system_text='You are a helpful assistant'):
         {"role": "user", "content": user_text}
     ]
     try:
+        collected_messages = []
         chat_response = openai.ChatCompletion.create(
-            model="gpt-4",
+            # model="gpt-4",
+            model="gpt-3.5-turbo",
             messages=prompt_message,
-            n=1
+            n=1,
+            stream=True
         )
-        final_response = chat_response.choices[0]['message']['content']
+        for chunk in chat_response:
+            chunk_message = chunk['choices'][0]['delta']  # extract the message
+            collected_messages.append(chunk_message)  # save the message
+        # final_response = chat_response.choices[0]['message']['content']
+        final_response = ''.join([m.get('content', '') for m in collected_messages])
     except Exception as e:
         final_response = f"ChatGPT isn't working right now. Here is the error they sent us:\n{e}"
     return final_response
