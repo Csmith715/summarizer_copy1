@@ -126,7 +126,7 @@ class GPT3Creations:
 
     def generate_blog_topics(self, topic, keywords):
         response = openai.Completion.create(
-            engine="text-davinci-002",
+            engine="text-davinci-003",
             prompt=f'Create an interesting blog title about:\n{topic}\nKeywords:\n{keywords}\n\n',
             temperature=1,
             max_tokens=25,
@@ -145,7 +145,7 @@ class GPT3Creations:
 
     def write_email_subject_lines(self, email_body, keywords=None):
         response = openai.Completion.create(
-            model="text-davinci-002",
+            model="text-davinci-003",
             prompt=f"Create an email subject line for the following email:\n\n{email_body}\n\n",
             temperature=1,
             max_tokens=25,
@@ -183,7 +183,7 @@ class GPT3Creations:
 def expand_blog_topics(selected_topic, topic, keywords, number_of_topics=10):
     num = str(number_of_topics+1)
     response = openai.Completion.create(
-        model="text-davinci-002",
+        model="text-davinci-003",
         prompt=f"Create an interesting blog title about:\n{topic}\nKeywords:\n{keywords}\n\n1. ",
         suffix=f"\n{num}. {selected_topic}\n\n\n",
         temperature=0.78,
@@ -197,12 +197,11 @@ def expand_blog_topics(selected_topic, topic, keywords, number_of_topics=10):
 def expand_email_sl_topics(selected_topic, email_body, number_of_topics=10):
     num = str(number_of_topics+1)
     response = openai.Completion.create(
-        model="text-davinci-002",
+        model="text-davinci-003",
         prompt=f"Create a list of email subject lines for the following email:\n\n{email_body}\n\n1.",
         suffix=f"\n{num}. {selected_topic}\n\n\n",
         temperature=0.78,
         max_tokens=200,
-        top_p=1,
         frequency_penalty=0.9,
         presence_penalty=1.63
     )
@@ -220,10 +219,8 @@ class NewGPT3Content:
     def __init__(self, data: dict):
         self.title = data['title']  # string
         self.summary = data['summary']  # string
-        # self.focus = data['snippet']
         self.bullets = data['snippets']  # array
         self.date = data['date']
-        # self.tone = data['tone']
         self.promotion_type = data['promotion type']
         self.sm_type = data['social media type']
         self.final_prompt = ''
@@ -239,13 +236,6 @@ class NewGPT3Content:
         prompt_a = self.craft_prompt()
         if self.sm_type:
             prompt_b = f'Create a varied series of long {self.sm_type} posts from this content:\n'
-        # if self.tone and self.sm_type:
-        #     prompt_b = f'Create a {self.tone} {self.sm_type} post from this content:\n'
-        # elif self.tone and not self.sm_type:
-        #     prompt_b = f'Create a {self.tone} social media post from this content:\n'
-        # elif self.sm_type and not self.tone:
-        #     prompt_b = f'Create a {self.sm_type} post from this content:\n'
-        # prompt = f"Title: {t}\nSummary: {s}\nPromotion Type: Webinar\n{foci}\nCreate a varied series of long Facebook posts from this content:\n\nFocus 1:"
         else:
             prompt_b = 'Create a varied series of long social media posts from this content\n'
         if self.bullets:
@@ -260,8 +250,6 @@ class NewGPT3Content:
             prompt = f'{prompt}Summary: {self.summary}\n'
         if self.date:
             prompt = f'{prompt}Date: {self.date}\n'
-        # if self.focus:
-        #     prompt = f'{prompt}Focus: {self.focus}\n'
         if self.promotion_type:
             prompt = f'{prompt}Promotion Type: {self.promotion_type}\n'
         if self.bullets:

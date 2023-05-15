@@ -10,7 +10,7 @@ from logging.config import fileConfig
 import blog
 from blog import MultilineGenerations
 from src.gpt3_generations import GPT3Creations, NewGPT3Content
-from src.openai_creations import SocialGenerations, generate_chat_text
+from src.openai_creations import SocialGenerations, generate_chat_text, SocialContentCreation
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
@@ -52,6 +52,25 @@ def summarizer():
     intext = req_data['text']
     data['summarized text'] = intext
     return flask.jsonify(data)
+
+@application.route('/summarizer/social-creations', methods=['POST'])
+def social_creations():
+    data = {}
+    req_data = None
+    if flask.request.content_type == 'application/json':
+        req_data = flask.request.get_json()
+    form_data = req_data.get('form_data', {})
+    title = form_data.get('socialPostTitle', '')
+    description = form_data.get('socialPostDescription', '')
+    keywords = form_data.get('keywords', '')
+    containers = req_data.get('containers', [])
+    logger.info('Creating Social Media content')
+    social_content = SocialContentCreation(title, description, keywords, containers)
+    # social_posts = social_content.make_social_creations()
+    output = social_content.make_social_creations()
+    logger.info('Social Content Created')
+
+    return flask.jsonify(output)
 
 @application.route('/summarizer/question_gpt_creations', methods=['POST'])
 def question_gpt_creations():
@@ -216,9 +235,8 @@ def create_chat_response():
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
     if req_data:
-        # sys_text = req_data.get('system_text', '')
         user_text = req_data.get('user_question', '')
-        data['content'] = generate_chat_text(user_text)
+        data['content'], _ = generate_chat_text(user_text)
     return flask.jsonify(data)
 
 @application.route('/healthz', methods=['GET'])

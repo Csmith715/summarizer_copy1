@@ -8,6 +8,73 @@ logger = logging.getLogger()
 openai.api_key = OPENAI_API_KEY
 
 
+class SocialContentCreation:
+    def __init__(self, title: str, description: str, keywords: list, containers: list):
+        self.title = title
+        self.summary = description
+        self.input_prompts = []
+        self.keywords = keywords
+        self.containers = containers
+        self.social_result_dict = {}
+        self.input_prompts = []
+        self.social_keys = ['Facebook', 'Twitter', 'Instagram']
+        self.map_dict = {}
+        self.data = {}
+
+    def make_social_creations(self):
+        self.create_prompts()
+        self.make_social_posts()
+        self.map_containers()
+        return self.data
+
+    def create_prompts(self):
+        if len(self.keywords) > 1:
+            kw = ', '.join(self.keywords)
+        elif len(self.keywords) == 1:
+            kw = self.keywords[0]
+        else:
+            kw = ''
+        system_text = f'Title: {self.title}\nDescription: {self.summary}\nKeywords: {kw}\n\nYou are a helpful assistant that specializes in creating social media content.'
+        for key in self.social_keys:
+            self.input_prompts.append(
+                (
+                    system_text,
+                    f'Create 10 {key} posts from the content provided. Number each post.\n\n',
+                    key
+                )
+            )
+
+    def make_social_posts(self):
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [executor.submit(generate_chat_text, sys_text, u_text, soc_key) for sys_text, u_text, soc_key in self.input_prompts]
+        results = [future.result() for future in futures]
+        for res in results:
+            split_posts = res[0].split('\n')
+            split_posts = [clean_gpt_text(s) for s in split_posts if s]
+            self.social_result_dict[res[1]] = split_posts
+        self.map_dict["Fb-LI"] = self.social_result_dict['Facebook']
+        self.map_dict["IG"] = self.social_result_dict['Instagram']
+        self.map_dict["TW"] = self.social_result_dict['Twitter']
+
+    def map_containers(self):
+        for container in self.containers:
+            container_key = container['content']
+            self.data[container_key] = {
+                "content": [],
+                "substitutions": []
+            }
+            fc_value = re.search('{#fullcontent value="(.*?)"', container_key)
+            if fc_value:
+                base_val = fc_value.group()
+                fcv = fc_value.group(1)
+                content_vals = self.map_dict[fcv][:len(container['positions'])]
+                content_vals = [re.sub(base_val, f'{base_val} content="{cv}"', container_key) for cv in content_vals]
+                self.data[container_key]['content'] = content_vals
+                self.data[container_key]['substitutions'] = [re.sub(base_val, f'{base_val} content="{m}"', container_key) for m in self.map_dict[fcv]]
+            else:
+                self.data[container_key]['content'] = [container_key]
+                self.data[container_key]['substitutions'] = []
+
 class SocialGenerations:
     def __init__(
             self,
@@ -162,7 +229,7 @@ def drop_last(esl_post: str) -> str:
     fixed_esl = '\n'.join(sesl[:-1])
     return fixed_esl
 
-def generate_chat_text(user_text, system_text='You are a helpful assistant'):
+def generate_chat_text(user_text, system_text='You are a helpful assistant', social_key=None):
     prompt_message = [
         {"role": "system", "content": system_text},
         {"role": "user", "content": user_text}
@@ -170,7 +237,6 @@ def generate_chat_text(user_text, system_text='You are a helpful assistant'):
     try:
         collected_messages = []
         chat_response = openai.ChatCompletion.create(
-            # model="gpt-4",
             model="gpt-3.5-turbo",
             messages=prompt_message,
             n=1,
@@ -183,4 +249,4 @@ def generate_chat_text(user_text, system_text='You are a helpful assistant'):
         final_response = ''.join([m.get('content', '') for m in collected_messages])
     except Exception as e:
         final_response = f"ChatGPT isn't working right now. Here is the error they sent us:\n{e}"
-    return final_response
+    return final_response, social_key
