@@ -3,6 +3,7 @@ import logging
 import concurrent.futures
 import re
 from config import url_string, emoji_pattern, OPENAI_API_KEY
+import math
 
 logger = logging.getLogger()
 openai.api_key = OPENAI_API_KEY
@@ -18,6 +19,9 @@ class SocialContentCreation:
         self.social_result_dict = {}
         self.input_prompts = []
         self.social_keys = ['Facebook', 'Twitter', 'Instagram']
+        # self.social_keys = ['Facebook', 'Twitter']
+        # self.social_keys = ['Facebook', 'Instagram']
+        # self.social_keys = ['Twitter', 'Instagram']
         self.map_dict = {}
         self.data = {}
 
@@ -47,9 +51,9 @@ class SocialContentCreation:
             split_posts = res[0].split('\n')
             split_posts = [clean_gpt_text(s) for s in split_posts if s]
             self.social_result_dict[res[1]] = split_posts
-        self.map_dict["Fb-LI"] = self.social_result_dict['Facebook']
-        self.map_dict["IG"] = self.social_result_dict['Instagram']
-        self.map_dict["TW"] = self.social_result_dict['Twitter']
+        self.map_dict["Fb-LI"] = self.social_result_dict.get('Facebook', [])
+        self.map_dict["IG"] = self.social_result_dict.get('Instagram', [])
+        self.map_dict["TW"] = self.social_result_dict.get('Twitter', [])
 
     def map_containers(self):
         for container in self.containers:
@@ -81,7 +85,8 @@ class SocialGenerations:
             job_title: str,
             introduction: str,
             promotion_type: str,
-            seq2seq_model
+            seq2seq_model,
+            action_verb: str
     ):
         self.chunked_snippets = list(divide_chunks(snippets, 5))
         self.non_questions = n_questions
@@ -89,13 +94,17 @@ class SocialGenerations:
         self.title = job_title
         self.summary = introduction
         self.promotion = promotion_type
+        self.action_verb = action_verb
         self.input_prompts = []
         self.result_dict = {
             "davinci:ft-contentware:esl-generation-2023-04-21-16-37-03": [],            # 'email subject lines'
             "davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04": [],   # 'Instagram'
-            "summarizer": []    # Summarizer
+            "summarizer": [],    # Summarizer
+            "gpt-4-fb": [],      # Facebook Ads
+            "gpt-4-li": []       # LinkedIn Ads
         }
         self.question_model = seq2seq_model
+        self.ad_n_count = math.ceil(10 / len(self.chunked_snippets))
 
     def create_socials(self):
         self.make_input_prompts()
@@ -103,7 +112,10 @@ class SocialGenerations:
         return self.result_dict
 
     def make_input_prompts(self):
-        form1 = f"This is content for an upcoming {self.promotion}:\n\nTitle: {self.title}\nSummary: {self.summary}\nObjectives:\n\n"
+        if self.action_verb:
+            form1 = f"This is content for an upcoming {self.promotion}:\n\nTitle: {self.title}\nSummary: {self.summary}\nAction Verb: {self.action_verb}\nObjectives:\n\n"
+        else:
+            form1 = f"This is content for an upcoming {self.promotion}:\n\nTitle: {self.title}\nSummary: {self.summary}\nObjectives:\n\n"
         igram_suffix = f'\n\nCreate a varied series of short Instagram posts that promotes this {self.promotion}.'
         esl_suffix = f'\n\nCreate a varied series of email subject lines that promotes this {self.promotion}. Number each subject line.'
         unfocused_bullets = []
@@ -128,6 +140,22 @@ class SocialGenerations:
                     3
                 )
             )
+            self.input_prompts.append(
+                (
+                    f'{form1}{ufb}\n\nYou are an expert marketing campaign writer.',
+                    "gpt-4-fb",
+                    75,
+                    self.ad_n_count
+                )
+            )
+            self.input_prompts.append(
+                (
+                    f'{form1}{ufb}\n\nYou are an expert marketing campaign writer.',
+                    "gpt-4-li",
+                    75,
+                    self.ad_n_count
+                )
+            )
         self.input_prompts.append(
             (
                 None,
@@ -145,10 +173,34 @@ class SocialGenerations:
             model = res['model']
             if model == 'summarizer':
                 self.result_dict['summarizer'] = res['result']
+            elif model == 'gpt-4-fb':
+                self.result_dict['gpt-4-fb'] = res['result']
+            elif model == 'gpt-4-li':
+                self.result_dict['gpt-4-li'] = res['result']
             else:
                 texts = [c['text'] for c in res.choices]
                 clean_texts = clean_gpt_list(texts, model)
                 self.result_dict[model].extend(clean_texts)
+
+    def generate_chat_text(self, user_text, system_text, repetitions, model_id):
+        prompt_message = [
+            {"role": "system", "content": system_text},
+            {"role": "user", "content": user_text}
+        ]
+        try:
+            chat_response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=prompt_message,
+                n=repetitions,
+            )
+            final_response = [g.message.content for g in chat_response.choices]
+        except Exception as e:
+            logger.info(e)
+            final_response = [self.snippets]
+        return {
+            'model': model_id,
+            'result': final_response
+        }
 
     def question_generator(self) -> dict:
         logger.info('Generating Questions')
@@ -166,6 +218,20 @@ class SocialGenerations:
     def generate_text(self, prompt, model, max_tokes, n_value):
         if model == 'summarizer':
             response = self.question_generator()
+        elif model == 'gpt-4-fb':
+            response = self.generate_chat_text(
+                'For each objective listed, write the main body for a Facebook Ad. Number each post, do not use emojis, and do not exceed 125 characters for each post.',
+                prompt,
+                n_value,
+                model
+            )
+        elif model == 'gpt-4-li':
+            response = self.generate_chat_text(
+                'For each objective listed, write the main body for a LinkedIn Ad. Number each post, do not use emojis, and do not exceed 150 characters for each post.',
+                prompt,
+                n_value,
+                model
+            )
         else:
             response = openai.Completion.create(
                 engine=model,

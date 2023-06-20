@@ -96,12 +96,15 @@ def question_gpt_creations():
     title = req_data.get('title', '')
     intro = req_data.get('introduction', '')
     promo = req_data.get('promotion_type', '')
+    action_verb = req_data.get('action_verb', '')
     logger.info('Generating Questions')
-    so_gen = SocialGenerations(non_questions, snips, title, intro, promo, question_model)
+    so_gen = SocialGenerations(non_questions, snips, title, intro, promo, question_model, action_verb)
     sog_results = so_gen.create_socials()
     data['generated_question'] = sog_results['summarizer']
     data['email_subject_lines'] = sog_results['davinci:ft-contentware:esl-generation-2023-04-21-16-37-03']
     data['instagram_posts'] = sog_results['davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04']
+    data['facebook_ads'] = sog_results['gpt-4-fb']
+    data['linkedin_ads'] = sog_results['gpt-4-li']
     logger.info('Questions, ESL, & Instagram Posts Created')
 
     return flask.jsonify(data)
