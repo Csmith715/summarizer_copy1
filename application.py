@@ -80,6 +80,8 @@ def question_gpt_creations():
             title (str): Title of the job passed
             introduction (str): The introduction paragraph passed
             promotion_type (str): The event label or type
+            action_verb (str): A specific campaign action that is passed to guide the text generations
+            promo_val (str): Promotion label string. Used to filter ads on/off
             }
     Returns: {
         generated_questions (list): An array of questions created using a Simple Transformer model,
@@ -97,14 +99,16 @@ def question_gpt_creations():
     intro = req_data.get('introduction', '')
     promo = req_data.get('promotion_type', '')
     action_verb = req_data.get('action_verb', '')
+    promo_val = req_data.get('promo_val', '')
     logger.info('Generating Questions')
-    so_gen = SocialGenerations(non_questions, snips, title, intro, promo, question_model, action_verb)
+    so_gen = SocialGenerations(non_questions, snips, title, intro, promo, question_model, action_verb, promo_val)
     sog_results = so_gen.create_socials()
     data['generated_question'] = sog_results['summarizer']
     data['email_subject_lines'] = sog_results['davinci:ft-contentware:esl-generation-2023-04-21-16-37-03']
     data['instagram_posts'] = sog_results['davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04']
     data['facebook_ads'] = sog_results['gpt-4-fb']
     data['linkedin_ads'] = sog_results['gpt-4-li']
+    data['email_headlines'] = sog_results['gpt-4-eh']
     logger.info('Questions, ESL, & Instagram Posts Created')
 
     return flask.jsonify(data)

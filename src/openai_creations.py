@@ -86,7 +86,8 @@ class SocialGenerations:
             introduction: str,
             promotion_type: str,
             seq2seq_model,
-            action_verb: str
+            action_verb: str,
+            promo_val: str
     ):
         self.chunked_snippets = list(divide_chunks(snippets, 5))
         self.non_questions = n_questions
@@ -101,10 +102,12 @@ class SocialGenerations:
             "davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04": [],   # 'Instagram'
             "summarizer": [],    # Summarizer
             "gpt-4-fb": [],      # Facebook Ads
-            "gpt-4-li": []       # LinkedIn Ads
+            "gpt-4-li": [],      # LinkedIn Ads
+            "gpt-4-eh": []       # Email Headlines
         }
         self.question_model = seq2seq_model
         self.ad_n_count = math.ceil(10 / len(self.chunked_snippets))
+        self.promo_val = promo_val
 
     def create_socials(self):
         self.make_input_prompts()
@@ -118,12 +121,38 @@ class SocialGenerations:
             form1 = f"This is content for an upcoming {self.promotion}:\n\nTitle: {self.title}\nSummary: {self.summary}\nObjectives:\n\n"
         igram_suffix = f'\n\nCreate a varied series of short Instagram posts that promotes this {self.promotion}.'
         esl_suffix = f'\n\nCreate a varied series of email subject lines that promotes this {self.promotion}. Number each subject line.'
+        # head_suffix = f'\n\nCreate two email headlines that will promote this {self.promotion}. '
         unfocused_bullets = []
         for chunk in self.chunked_snippets:
             unfocused_blist = [f'- {bul}' for bul in chunk]
             unfocused_bullets.append('\n'.join(unfocused_blist))
         # random_ufb = random.choice(unfocused_bullets)
         for ufb in unfocused_bullets:
+            if self.promo_val == 'SINGLE_SOCIAL_POST':
+                self.input_prompts.append(
+                    (
+                        f'{form1}{ufb}\n\nYou are an expert marketing campaign writer.',
+                        "gpt-4-fb",
+                        75,
+                        self.ad_n_count
+                    )
+                )
+                self.input_prompts.append(
+                    (
+                        f'{form1}{ufb}\n\nYou are an expert marketing campaign writer.',
+                        "gpt-4-li",
+                        75,
+                        self.ad_n_count
+                    )
+                )
+            # self.input_prompts.append(
+            #     (
+            #         f'{form1}{ufb}{head_suffix}One should be in the form of a question with a response to that question. Separate the headlines by "\n"',
+            #         "gpt-4-eh",
+            #         120,
+            #         3
+            #     )
+            # )
             self.input_prompts.append(
                 (
                     f"{form1}{ufb}{igram_suffix}Each post should be less than 180 characters. Number each post.\n\n",
@@ -138,22 +167,6 @@ class SocialGenerations:
                     "davinci:ft-contentware:esl-generation-2023-04-21-16-37-03",
                     75,
                     3
-                )
-            )
-            self.input_prompts.append(
-                (
-                    f'{form1}{ufb}\n\nYou are an expert marketing campaign writer.',
-                    "gpt-4-fb",
-                    75,
-                    self.ad_n_count
-                )
-            )
-            self.input_prompts.append(
-                (
-                    f'{form1}{ufb}\n\nYou are an expert marketing campaign writer.',
-                    "gpt-4-li",
-                    75,
-                    self.ad_n_count
                 )
             )
         self.input_prompts.append(
@@ -177,6 +190,8 @@ class SocialGenerations:
                 self.result_dict['gpt-4-fb'] = res['result']
             elif model == 'gpt-4-li':
                 self.result_dict['gpt-4-li'] = res['result']
+            elif model == 'gpt-4-eh':
+                self.result_dict['gpt-4-eh'] = res['result']
             else:
                 texts = [c['text'] for c in res.choices]
                 clean_texts = clean_gpt_list(texts, model)
@@ -229,6 +244,13 @@ class SocialGenerations:
             response = self.generate_chat_text(
                 'For each objective listed, write the main body for a LinkedIn Ad. Number each post, do not use emojis, and do not exceed 150 characters for each post.',
                 prompt,
+                n_value,
+                model
+            )
+        elif model == 'gpt-4-eh':
+            response = self.generate_chat_text(
+                prompt,
+                'You are an expert at writing promotional material.',
                 n_value,
                 model
             )
