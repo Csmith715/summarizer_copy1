@@ -128,7 +128,8 @@ class SocialGenerations:
             unfocused_bullets.append('\n'.join(unfocused_blist))
         # random_ufb = random.choice(unfocused_bullets)
         for ufb in unfocused_bullets:
-            if self.promo_val == 'SINGLE_SOCIAL_POST':
+            # if self.promo_val == 'SINGLE_SOCIAL_POST': # this is the value Mitch and David agreed on mid-May
+            if self.promo_val == 'ANY_VALUE_not listed':  # An unnecessary change in case SINGLE_SOCIAL_POST is passed accidentally
                 self.input_prompts.append(
                     (
                         f'{form1}{ufb}\n\nYou are an expert marketing campaign writer.',
