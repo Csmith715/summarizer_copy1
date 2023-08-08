@@ -2,10 +2,10 @@ import flask
 from flask import render_template, request
 import os
 from models import ModelFuncs, bucket_name
-from utils import cta_path, cta_root_path, qg_path, qg_root_path
+from utils import cta_path, cta_root_path  # qg_path, qg_root_path
 import logging
-from simpletransformers.seq2seq import Seq2SeqModel
-import torch
+# from simpletransformers.seq2seq import Seq2SeqModel
+# import torch
 from logging.config import fileConfig
 import blog
 from blog import MultilineGenerations
@@ -22,26 +22,26 @@ def page_not_found():
 application = flask.Flask(__name__)
 
 application.register_error_handler(404, page_not_found)
-question_model = None
-def load_model():
-    global question_model
-    if not question_model:
-        try:
-            logger.info("Loading Seq2Seq model")
-            question_model = Seq2SeqModel(
-                encoder_decoder_type="bart",
-                encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-                use_cuda=torch.cuda.is_available()
-            )
-        except Exception as e:
-            # for local testing
-            print(e)
-            question_model = Seq2SeqModel(
-                encoder_decoder_type="bart",
-                encoder_decoder_name='/Users/micksmith/Contentware_Local_Models/question_generation',
-                use_cuda=torch.cuda.is_available()
-            )
-        logger.info('Question Model Loaded')
+# question_model = None
+# def load_model():
+#     global question_model
+#     if not question_model:
+#         try:
+#             logger.info("Loading Seq2Seq model")
+#             question_model = Seq2SeqModel(
+#                 encoder_decoder_type="bart",
+#                 encoder_decoder_name=os.path.join(qg_root_path, qg_path),
+#                 use_cuda=torch.cuda.is_available()
+#             )
+#         except Exception as e:
+#             # for local testing
+#             print(e)
+#             question_model = Seq2SeqModel(
+#                 encoder_decoder_type="bart",
+#                 encoder_decoder_name='/Users/micksmith/Contentware_Local_Models/question_generation',
+#                 use_cuda=torch.cuda.is_available()
+#             )
+#         logger.info('Question Model Loaded')
 
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
@@ -55,7 +55,7 @@ def summarizer():
 
 @application.route('/summarizer/social-creations', methods=['POST'])
 def social_creations():
-    data = {}
+    # data = {}
     req_data = None
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
@@ -84,7 +84,7 @@ def question_gpt_creations():
             promo_val (str): Promotion label string. Used to filter ads on/off
             }
     Returns: {
-        generated_questions (list): An array of questions created using a Simple Transformer model,
+        # generated_questions (list): An array of questions created using a Simple Transformer model,
         email_subject_lines (list): An array of email subject lines
         instagram_posts (list): An array of generated Instagram posts
         }
@@ -94,48 +94,50 @@ def question_gpt_creations():
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
     snips = req_data.get('snippets', [])
-    non_questions = req_data.get('non_questions', [])
+    # non_questions = req_data.get('non_questions', [])
     title = req_data.get('title', '')
     intro = req_data.get('introduction', '')
     promo = req_data.get('promotion_type', '')
     action_verb = req_data.get('action_verb', '')
     promo_val = req_data.get('promo_val', '')
-    logger.info('Generating Questions')
-    so_gen = SocialGenerations(non_questions, snips, title, intro, promo, question_model, action_verb, promo_val)
+    logger.info('Creating OpenAI content')
+    so_gen = SocialGenerations(snips, title, intro, promo, action_verb, promo_val)
     sog_results = so_gen.create_socials()
-    data['generated_question'] = sog_results['summarizer']
+    # data['generated_question'] = sog_results['summarizer']
     data['email_subject_lines'] = sog_results['davinci:ft-contentware:esl-generation-2023-04-21-16-37-03']
     data['instagram_posts'] = sog_results['davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04']
     data['facebook_ads'] = sog_results['gpt-4-fb']
     data['linkedin_ads'] = sog_results['gpt-4-li']
     data['email_headlines'] = sog_results['gpt-4-eh']
-    logger.info('Questions, ESL, & Instagram Posts Created')
+    data['cta_buttons'] = sog_results['gpt-4-buttons']
+    data['shortcta'] = sog_results['davinci:ft-contentware:email-cta-v2-2023-05-04-23-04-53']
+    logger.info('Buttons, ESL, Instagram Posts, & Headlines Created')
 
     return flask.jsonify(data)
 
 
-@application.route('/summarizer/generatequestions', methods=['POST'])
-def generatequestions():
-    """
-    Parameters: {
-            text (list): An array of snippets for question generation,
-            email_cta_prompt (str): A string to be passed to an OpenAI call
-            }
-    Returns: {
-        generated question (list): An array of questions created using a Simple Transformer model,
-        email_ctas (list): An array of email call to action texts
-        }
-    """
-    data = {}
-    req_data = None
-    if flask.request.content_type == 'application/json':
-        req_data = flask.request.get_json()
-    inputtext = req_data.get('text', '')
-    logger.info('Generating Questions')
-    data['generated question'] = question_model.predict(inputtext)
-    logger.info('Questions Created')
-
-    return flask.jsonify(data)
+# @application.route('/summarizer/generatequestions', methods=['POST'])
+# def generatequestions():
+#     """
+#     Parameters: {
+#             text (list): An array of snippets for question generation,
+#             email_cta_prompt (str): A string to be passed to an OpenAI call
+#             }
+#     Returns: {
+#         generated question (list): An array of questions created using a Simple Transformer model,
+#         email_ctas (list): An array of email call to action texts
+#         }
+#     """
+#     data = {}
+#     req_data = None
+#     if flask.request.content_type == 'application/json':
+#         req_data = flask.request.get_json()
+#     inputtext = req_data.get('text', '')
+#     logger.info('Generating Questions')
+#     data['generated question'] = question_model.predict(inputtext)
+#     logger.info('Questions Created')
+#
+#     return flask.jsonify(data)
 
 @application.route('/summarizer/updateCTA', methods=['GET'])
 def updatecta():
@@ -255,6 +257,6 @@ if __name__ == "__main__":
     port = os.getenv('FLASK_PORT', 5000)
     host = os.getenv('FLASK_HOST', None)
     debug = not os.getenv('LIVE', False)
-    load_model()
-    logger.info('Seq2Seq Model Loaded')
+    # load_model()
+    # logger.info('Seq2Seq Model Loaded')
     application.run(host=host, port=port, debug=debug)

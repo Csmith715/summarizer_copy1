@@ -4,6 +4,7 @@ import concurrent.futures
 import re
 from config import url_string, emoji_pattern, OPENAI_API_KEY
 import math
+from itertools import chain
 
 logger = logging.getLogger()
 openai.api_key = OPENAI_API_KEY
@@ -80,17 +81,17 @@ class SocialContentCreation:
 class SocialGenerations:
     def __init__(
             self,
-            n_questions: list,
+            # n_questions: list,
             snippets: list,
             job_title: str,
             introduction: str,
             promotion_type: str,
-            seq2seq_model,
+            # seq2seq_model,
             action_verb: str,
             promo_val: str
     ):
         self.chunked_snippets = list(divide_chunks(snippets, 5))
-        self.non_questions = n_questions
+        # self.non_questions = n_questions
         self.snippets = snippets
         self.title = job_title
         self.summary = introduction
@@ -100,12 +101,14 @@ class SocialGenerations:
         self.result_dict = {
             "davinci:ft-contentware:esl-generation-2023-04-21-16-37-03": [],            # 'email subject lines'
             "davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04": [],   # 'Instagram'
-            "summarizer": [],    # Summarizer
+            # "summarizer": [],    # Summarizer
             "gpt-4-fb": [],      # Facebook Ads
             "gpt-4-li": [],      # LinkedIn Ads
-            "gpt-4-eh": []       # Email Headlines
+            "gpt-4-eh": [],       # Email Headlines
+            "gpt-4-buttons": [],   # CTA Buttons
+            "davinci:ft-contentware:email-cta-v2-2023-05-04-23-04-53": []  # shortcta
         }
-        self.question_model = seq2seq_model
+        # self.question_model = seq2seq_model
         self.ad_n_count = math.ceil(10 / len(self.chunked_snippets))
         self.promo_val = promo_val
 
@@ -121,7 +124,8 @@ class SocialGenerations:
             form1 = f"This is content for an upcoming {self.promotion}:\n\nTitle: {self.title}\nSummary: {self.summary}\nObjectives:\n\n"
         igram_suffix = f'\n\nCreate a varied series of short Instagram posts that promotes this {self.promotion}.'
         esl_suffix = f'\n\nCreate a varied series of email subject lines that promotes this {self.promotion}. Number each subject line.'
-        # head_suffix = f'\n\nCreate two email headlines that will promote this {self.promotion}. '
+        head_suffix = f'\n\nCreate ten email headlines that will promote this {self.promotion}. '
+        button_suffix = f'Create thirty action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
         unfocused_bullets = []
         for chunk in self.chunked_snippets:
             unfocused_blist = [f'- {bul}' for bul in chunk]
@@ -146,14 +150,23 @@ class SocialGenerations:
                         self.ad_n_count
                     )
                 )
-            # self.input_prompts.append(
-            #     (
-            #         f'{form1}{ufb}{head_suffix}One should be in the form of a question with a response to that question. Separate the headlines by "\n"',
-            #         "gpt-4-eh",
-            #         120,
-            #         3
-            #     )
-            # )
+            self.input_prompts.append(
+                (
+                    f'{form1}{ufb}{head_suffix}At least one should be in the form of a question with a response to that question. Separate the headlines by "\n" and do not '
+                    f'number them.',
+                    "gpt-4-eh",
+                    120,
+                    2
+                )
+            )
+            self.input_prompts.append(
+                (
+                    f'{form1}{ufb}{button_suffix}Alternate each button phrase between one and two words in length. Number each button phrase.\n\n',
+                    "gpt-4-buttons",
+                    70,
+                    1
+                )
+            )
             self.input_prompts.append(
                 (
                     f"{form1}{ufb}{igram_suffix}Each post should be less than 180 characters. Number each post.\n\n",
@@ -170,14 +183,22 @@ class SocialGenerations:
                     3
                 )
             )
-        self.input_prompts.append(
-            (
-                None,
-                "summarizer",
-                None,
-                None,
+            self.input_prompts.append(
+                (
+                    f'{form1}{ufb}\n\nWrite a short Call to Action sentence for an email communication about this {self.promotion} that will encourage a response.\n\n',
+                    "davinci:ft-contentware:email-cta-v2-2023-05-04-23-04-53",
+                    6,
+                    10
+                )
             )
-        )
+        # self.input_prompts.append(
+        #     (
+        #         None,
+        #         "summarizer",
+        #         None,
+        #         None,
+        #     )
+        # )
 
     def make_gpt(self):
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -185,14 +206,16 @@ class SocialGenerations:
         results = [future.result() for future in futures]
         for res in results:
             model = res['model']
-            if model == 'summarizer':
-                self.result_dict['summarizer'] = res['result']
-            elif model == 'gpt-4-fb':
+            # if model == 'summarizer':
+            #     self.result_dict['summarizer'] = res['result']
+            if model == 'gpt-4-fb':
                 self.result_dict['gpt-4-fb'] = res['result']
             elif model == 'gpt-4-li':
                 self.result_dict['gpt-4-li'] = res['result']
             elif model == 'gpt-4-eh':
-                self.result_dict['gpt-4-eh'] = res['result']
+                self.result_dict['gpt-4-eh'] = clean_headlines(res['result'])
+            elif model == 'gpt-4-buttons':
+                self.result_dict['gpt-4-buttons'] = clean_buttons(res['result'])
             else:
                 texts = [c['text'] for c in res.choices]
                 clean_texts = clean_gpt_list(texts, model)
@@ -218,23 +241,23 @@ class SocialGenerations:
             'result': final_response
         }
 
-    def question_generator(self) -> dict:
-        logger.info('Generating Questions')
-        try:
-            questions = self.question_model.predict(self.non_questions)
-            logger.info('Questions Completed')
-        except Exception as e:
-            logger.info(e)
-            questions = []
-        return {
-            'model': 'summarizer',
-            'result': questions
-        }
+    # def question_generator(self) -> dict:
+    #     logger.info('Generating Questions')
+    #     try:
+    #         questions = self.question_model.predict(self.non_questions)
+    #         logger.info('Questions Completed')
+    #     except Exception as e:
+    #         logger.info(e)
+    #         questions = []
+    #     return {
+    #         'model': 'summarizer',
+    #         'result': questions
+    #     }
 
     def generate_text(self, prompt, model, max_tokes, n_value):
-        if model == 'summarizer':
-            response = self.question_generator()
-        elif model == 'gpt-4-fb':
+        # if model == 'summarizer':
+        #     response = self.question_generator()
+        if model == 'gpt-4-fb':
             response = self.generate_chat_text(
                 'For each objective listed, write the main body for a Facebook Ad. Number each post, do not use emojis, and do not exceed 125 characters for each post.',
                 prompt,
@@ -249,6 +272,13 @@ class SocialGenerations:
                 model
             )
         elif model == 'gpt-4-eh':
+            response = self.generate_chat_text(
+                prompt,
+                'You are an expert at writing promotional material.',
+                n_value,
+                model
+            )
+        elif model == 'gpt-4-buttons':
             response = self.generate_chat_text(
                 prompt,
                 'You are an expert at writing promotional material.',
@@ -304,6 +334,8 @@ def clean_gpt_list(output_array: list, model_name: str) -> list:
             frs = frs[:-1]
         ufs = [remove_url(f) for f in frs]
         cleaned.extend(ufs)
+    if model_name == 'davinci:ft-contentware:email-cta-v2-2023-05-04-23-04-53':
+        cleaned = output_array
     cleaned = list(set(cleaned))
     return cleaned
 
@@ -339,3 +371,22 @@ def generate_chat_text(user_text, system_text='You are a helpful assistant', soc
         final_response = f"ChatGPT isn't working right now. Here is the error they sent us:\n{e}"
     # logging.info(f'{social_key} Complete')
     return final_response, social_key
+
+def clean_headlines(email_headlines: list):
+    cleaned = []
+    for e in email_headlines:
+        headlines = e.split('\n')
+        headlines = [h.strip().strip('"') for h in headlines if h]
+        cleaned.append(headlines)
+    return list(chain.from_iterable(cleaned))
+
+def clean_buttons(cta_buttons: list):
+    cleaned = []
+    if cta_buttons:
+        button_text = cta_buttons[0]
+        split_buttons = button_text.split('\n')
+        for s in split_buttons:
+            clean_text = re.sub(r'^\d+\. ', '', s)
+            clean_text = clean_text.strip().strip('"')
+            cleaned.append(clean_text)
+    return cleaned
