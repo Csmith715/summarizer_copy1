@@ -11,6 +11,7 @@ import blog
 from blog import MultilineGenerations
 from src.gpt3_generations import GPT3Creations, NewGPT3Content
 from src.openai_creations import SocialGenerations, generate_chat_text, SocialContentCreation
+import random
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
@@ -109,7 +110,9 @@ def question_gpt_creations():
     data['facebook_ads'] = sog_results['gpt-4-fb']
     data['linkedin_ads'] = sog_results['gpt-4-li']
     data['email_headlines'] = sog_results['gpt-4-eh']
-    data['cta_buttons'] = sog_results['gpt-4-buttons']
+    buttons = sog_results['gpt-4-buttons']
+    random.shuffle(buttons)
+    data['cta_buttons'] = buttons
     data['shortcta'] = sog_results['davinci:ft-contentware:email-cta-v2-2023-05-04-23-04-53']
     logger.info('Buttons, ESL, Instagram Posts, & Headlines Created')
 

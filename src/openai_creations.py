@@ -5,6 +5,8 @@ import re
 from config import url_string, emoji_pattern, OPENAI_API_KEY
 import math
 from itertools import chain
+import time
+import random
 
 logger = logging.getLogger()
 openai.api_key = OPENAI_API_KEY
@@ -125,12 +127,13 @@ class SocialGenerations:
         igram_suffix = f'\n\nCreate a varied series of short Instagram posts that promotes this {self.promotion}.'
         esl_suffix = f'\n\nCreate a varied series of email subject lines that promotes this {self.promotion}. Number each subject line.'
         head_suffix = f'\n\nCreate ten email headlines that will promote this {self.promotion}. '
-        button_suffix = f'Create thirty action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
+        button1_suffix = f'Create fifteen single word action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
+        button2_suffix = f'Create fifteen two word action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
         unfocused_bullets = []
         for chunk in self.chunked_snippets:
             unfocused_blist = [f'- {bul}' for bul in chunk]
             unfocused_bullets.append('\n'.join(unfocused_blist))
-        # random_ufb = random.choice(unfocused_bullets)
+        random_ufb = random.choice(unfocused_bullets)
         for ufb in unfocused_bullets:
             # if self.promo_val == 'SINGLE_SOCIAL_POST': # this is the value Mitch and David agreed on mid-May
             if self.promo_val == 'ANY_VALUE_not listed':  # An unnecessary change in case SINGLE_SOCIAL_POST is passed accidentally
@@ -150,23 +153,6 @@ class SocialGenerations:
                         self.ad_n_count
                     )
                 )
-            self.input_prompts.append(
-                (
-                    f'{form1}{ufb}{head_suffix}At least one should be in the form of a question with a response to that question. Separate the headlines by "\n" and do not '
-                    f'number them.',
-                    "gpt-4-eh",
-                    120,
-                    2
-                )
-            )
-            self.input_prompts.append(
-                (
-                    f'{form1}{ufb}{button_suffix}Alternate each button phrase between one and two words in length. Number each button phrase.\n\n',
-                    "gpt-4-buttons",
-                    70,
-                    1
-                )
-            )
             self.input_prompts.append(
                 (
                     f"{form1}{ufb}{igram_suffix}Each post should be less than 180 characters. Number each post.\n\n",
@@ -191,6 +177,31 @@ class SocialGenerations:
                     10
                 )
             )
+        self.input_prompts.append(
+            (
+                f'{form1}{random_ufb}{head_suffix}At least one should be in the form of a question with a response to that question. Separate the headlines by "\n" and do not '
+                f'number them.',
+                "gpt-4-eh",
+                120,
+                2
+            )
+        )
+        self.input_prompts.append(
+            (
+                f'{form1}{random_ufb}{button1_suffix}Number each button phrase.\n\n',
+                "gpt-4-buttons1",
+                35,
+                1
+            )
+        )
+        self.input_prompts.append(
+            (
+                f'{form1}{random_ufb}{button2_suffix}Number each button phrase.\n\n',
+                "gpt-4-buttons2",
+                35,
+                1
+            )
+        )
         # self.input_prompts.append(
         #     (
         #         None,
@@ -214,8 +225,9 @@ class SocialGenerations:
                 self.result_dict['gpt-4-li'] = res['result']
             elif model == 'gpt-4-eh':
                 self.result_dict['gpt-4-eh'] = clean_headlines(res['result'])
-            elif model == 'gpt-4-buttons':
-                self.result_dict['gpt-4-buttons'] = clean_buttons(res['result'])
+            elif model == 'gpt-4-buttons1' or model == 'gpt-4-buttons2':
+                cleaned_buttons = clean_buttons(res['result'])
+                self.result_dict['gpt-4-buttons'].extend(cleaned_buttons)
             else:
                 texts = [c['text'] for c in res.choices]
                 clean_texts = clean_gpt_list(texts, model)
@@ -228,7 +240,7 @@ class SocialGenerations:
         ]
         try:
             chat_response = openai.ChatCompletion.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=prompt_message,
                 n=repetitions,
             )
@@ -255,6 +267,7 @@ class SocialGenerations:
     #     }
 
     def generate_text(self, prompt, model, max_tokes, n_value):
+        # ts = time.time()
         # if model == 'summarizer':
         #     response = self.question_generator()
         if model == 'gpt-4-fb':
@@ -278,7 +291,14 @@ class SocialGenerations:
                 n_value,
                 model
             )
-        elif model == 'gpt-4-buttons':
+        elif model == 'gpt-4-buttons1':
+            response = self.generate_chat_text(
+                prompt,
+                'You are an expert at writing promotional material.',
+                n_value,
+                model
+            )
+        elif model == 'gpt-4-buttons2':
             response = self.generate_chat_text(
                 prompt,
                 'You are an expert at writing promotional material.',
@@ -294,6 +314,9 @@ class SocialGenerations:
                 presence_penalty=0.25,
                 n=n_value
             )
+        # te = time.time()
+        # tdiff = te-ts
+        # print(f'{model}: {tdiff}')
         return response
 
 def divide_chunks(list_to_chunk, n):
@@ -383,6 +406,7 @@ def clean_headlines(email_headlines: list):
 def clean_buttons(cta_buttons: list):
     cleaned = []
     if cta_buttons:
+        # print(cta_buttons)
         button_text = cta_buttons[0]
         split_buttons = button_text.split('\n')
         for s in split_buttons:
