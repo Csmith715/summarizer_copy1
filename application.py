@@ -12,6 +12,7 @@ from blog import MultilineGenerations
 from src.gpt3_generations import GPT3Creations, NewGPT3Content
 from src.openai_creations import SocialGenerations, generate_chat_text, SocialContentCreation
 import random
+from nltk import word_tokenize
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
@@ -110,6 +111,8 @@ def question_gpt_creations():
     data['email_headlines'] = sog_results['gpt-4-eh']
     buttons = sog_results['gpt-4-buttons']
     random.shuffle(buttons)
+    buttons = [b for b in buttons if b]
+    buttons = [b for b in buttons if len(word_tokenize(b)) < 4]
     data['cta_buttons'] = buttons
     data['shortcta'] = sog_results['gpt3.5-scta']
     logger.info('Buttons, ESL, Instagram Posts, Short CTAs, & Headlines Created')
