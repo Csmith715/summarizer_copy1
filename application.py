@@ -95,7 +95,6 @@ def question_gpt_creations():
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
     snips = req_data.get('snippets', [])
-    # non_questions = req_data.get('non_questions', [])
     title = req_data.get('title', '')
     intro = req_data.get('introduction', '')
     promo = req_data.get('promotion_type', '')
@@ -104,7 +103,6 @@ def question_gpt_creations():
     logger.info('Creating OpenAI content')
     so_gen = SocialGenerations(snips, title, intro, promo, action_verb, promo_val)
     sog_results = so_gen.create_socials()
-    # data['generated_question'] = sog_results['summarizer']
     data['email_subject_lines'] = sog_results['davinci:ft-contentware:esl-generation-2023-04-21-16-37-03']
     data['instagram_posts'] = sog_results['davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04']
     data['facebook_ads'] = sog_results['gpt-4-fb']
@@ -113,8 +111,8 @@ def question_gpt_creations():
     buttons = sog_results['gpt-4-buttons']
     random.shuffle(buttons)
     data['cta_buttons'] = buttons
-    data['shortcta'] = sog_results['davinci:ft-contentware:email-cta-v2-2023-05-04-23-04-53']
-    logger.info('Buttons, ESL, Instagram Posts, & Headlines Created')
+    data['shortcta'] = sog_results['gpt3.5-scta']
+    logger.info('Buttons, ESL, Instagram Posts, Short CTAs, & Headlines Created')
 
     return flask.jsonify(data)
 
