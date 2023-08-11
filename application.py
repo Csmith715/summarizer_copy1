@@ -86,7 +86,6 @@ def question_gpt_creations():
             promo_val (str): Promotion label string. Used to filter ads on/off
             }
     Returns: {
-        # generated_questions (list): An array of questions created using a Simple Transformer model,
         email_subject_lines (list): An array of email subject lines
         instagram_posts (list): An array of generated Instagram posts
         }

@@ -118,14 +118,18 @@ class SocialGenerations:
     def make_input_prompts(self):
         if self.action_verb:
             form1 = f"This is content for an upcoming {self.promotion}:\n\nTitle: {self.title}\nSummary: {self.summary}\nAction Verb: {self.action_verb}\nObjectives:\n\n"
+            # form2 = f"This is content for an upcoming {self.promotion}:\n\nTitle: {self.title}\nSummary: {self.summary}\nAction Verb: {self.action_verb}\n"
         else:
             form1 = f"This is content for an upcoming {self.promotion}:\n\nTitle: {self.title}\nSummary: {self.summary}\nObjectives:\n\n"
+            # form2 = f"This is content for an upcoming {self.promotion}:\n\nTitle: {self.title}\nSummary: {self.summary}\n"
         igram_suffix = f'\n\nCreate a varied series of short Instagram posts that promotes this {self.promotion}.'
         esl_suffix = f'\n\nCreate a varied series of email subject lines that promotes this {self.promotion}. Number each subject line.'
         head_suffix = f'\n\nCreate ten email headlines that will promote this {self.promotion}. '
         short_cta_suffix = f'\n\nWrite ten short Call to Action sentences for an email communication about this {self.promotion} that will encourage a response. '
-        button1_suffix = f'Create fifteen single word action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
-        button2_suffix = f'Create fifteen two word action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
+        # button1_suffix = f'Create fifteen single word action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
+        # button2_suffix = f'Create fifteen two word action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
+        button1_suffix = f'Create 15 single word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
+        button2_suffix = f'Create 15 two word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
         unfocused_bullets = []
         for chunk in self.chunked_snippets:
             unfocused_blist = [f'- {bul}' for bul in chunk]
@@ -193,7 +197,7 @@ class SocialGenerations:
         )
         self.input_prompts.append(
             (
-                f'{form1}{random_ufb}{button1_suffix}Number each button phrase.\n\n',
+                f'{button1_suffix}Number each button phrase.\n\n',
                 "gpt-4-buttons1",
                 35,
                 1
@@ -201,7 +205,7 @@ class SocialGenerations:
         )
         self.input_prompts.append(
             (
-                f'{form1}{random_ufb}{button2_suffix}Number each button phrase.\n\n',
+                f'{button2_suffix}Number each button phrase.\n\n',
                 "gpt-4-buttons2",
                 35,
                 1
