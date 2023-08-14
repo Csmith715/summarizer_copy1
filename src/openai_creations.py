@@ -106,13 +106,15 @@ class SocialGenerations:
             "gpt-4-buttons": [],   # CTA Buttons
             "gpt3.5-scta": []  # shortcta
         }
-        # self.question_model = seq2seq_model
         self.ad_n_count = math.ceil(10 / len(self.chunked_snippets))
         self.promo_val = promo_val
 
     def create_socials(self):
         self.make_input_prompts()
         self.make_gpt()
+        for k, v in self.result_dict.items():
+            if v:
+                self.result_dict[k] = extra_clean(v)
         return self.result_dict
 
     def make_input_prompts(self):
@@ -416,3 +418,11 @@ def clean_short_ctas(short_ctas: list) -> list:
             clean_text = clean_text.strip().strip('"')
             cleaned.append(clean_text)
     return cleaned
+
+def extra_clean(list_text):
+    e_clean = []
+    for text in list_text:
+        clean_text = re.sub(r'^\d+\. ', '', text)
+        clean_text = clean_text.strip().strip('"')
+        e_clean.append(clean_text)
+    return e_clean
