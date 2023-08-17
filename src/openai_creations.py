@@ -128,10 +128,8 @@ class SocialGenerations:
         esl_suffix = f'\n\nCreate a varied series of email subject lines that promotes this {self.promotion}. Number each subject line.'
         head_suffix = f'\n\nCreate ten email headlines that will promote this {self.promotion}. '
         short_cta_suffix = f'\n\nWrite ten short Call to Action sentences for an email communication about this {self.promotion} that will encourage a response. '
-        # button1_suffix = f'Create fifteen single word action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
-        # button2_suffix = f'Create fifteen two word action button phrases that would encourage a user to click on an ad that promotes this {self.promotion}. '
-        button1_suffix = f'Create 15 single word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
-        button2_suffix = f'Create 15 two word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
+        button1_suffix = f'Create 10 single word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
+        button2_suffix = f'Create 10 two word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
         unfocused_bullets = []
         for chunk in self.chunked_snippets:
             unfocused_blist = [f'- {bul}' for bul in chunk]
@@ -172,14 +170,6 @@ class SocialGenerations:
                     3
                 )
             )
-            # self.input_prompts.append(
-            #     (
-            #         f'{form1}{ufb}\n\nWrite a short Call to Action sentence for an email communication about this {self.promotion} that will encourage a response.\n\n',
-            #         "davinci:ft-contentware:email-cta-v2-2023-05-04-23-04-53",
-            #         6,
-            #         10
-            #     )
-            # )
         self.input_prompts.append(
             (
                 f'{form1}{random_ufb}{short_cta_suffix}Each Call to Action should be at most 8 words long. Number each Call to Action.',
@@ -201,7 +191,7 @@ class SocialGenerations:
             (
                 f'{button1_suffix}Number each button phrase.\n\n',
                 "gpt-4-buttons1",
-                35,
+                20,
                 1
             )
         )
@@ -209,7 +199,7 @@ class SocialGenerations:
             (
                 f'{button2_suffix}Number each button phrase.\n\n',
                 "gpt-4-buttons2",
-                35,
+                30,
                 1
             )
         )
@@ -237,13 +227,18 @@ class SocialGenerations:
                 self.result_dict[model].extend(clean_texts)
 
     def generate_chat_text(self, user_text, system_text, repetitions, model_id):
+        if model_id == 'gpt-4-buttons' or model_id == 'gpt-4-buttons2':
+            openai_model = 'gpt-4'
+        else:
+            openai_model = 'gpt-3.5-turbo'
+        # openai_model = 'gpt-3.5-turbo'
         prompt_message = [
             {"role": "system", "content": system_text},
             {"role": "user", "content": user_text}
         ]
         try:
             chat_response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+                model=openai_model,
                 messages=prompt_message,
                 n=repetitions,
             )
