@@ -128,8 +128,8 @@ class SocialGenerations:
         esl_suffix = f'\n\nCreate a varied series of email subject lines that promotes this {self.promotion}. Number each subject line.'
         head_suffix = f'\n\nCreate ten email headlines that will promote this {self.promotion}. '
         short_cta_suffix = f'\n\nWrite ten short Call to Action sentences for an email communication about this {self.promotion} that will encourage a response. '
-        button1_suffix = f'Create 10 single word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
-        button2_suffix = f'Create 10 two word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
+        button1_suffix = f'Create 15 single word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
+        button2_suffix = f'Create 15 two word email call to action buttons that would encourage the reader to engage in a {self.promotion}. '
         unfocused_bullets = []
         for chunk in self.chunked_snippets:
             unfocused_blist = [f'- {bul}' for bul in chunk]
@@ -191,7 +191,7 @@ class SocialGenerations:
             (
                 f'{button1_suffix}Number each button phrase.\n\n',
                 "gpt-4-buttons1",
-                20,
+                30,
                 1
             )
         )
@@ -199,7 +199,7 @@ class SocialGenerations:
             (
                 f'{button2_suffix}Number each button phrase.\n\n',
                 "gpt-4-buttons2",
-                30,
+                40,
                 1
             )
         )
