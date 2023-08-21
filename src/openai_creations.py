@@ -22,9 +22,6 @@ class SocialContentCreation:
         self.social_result_dict = {}
         self.input_prompts = []
         self.social_keys = ['Facebook', 'Twitter', 'Instagram']
-        # self.social_keys = ['Facebook', 'Twitter']
-        # self.social_keys = ['Facebook', 'Instagram']
-        # self.social_keys = ['Twitter', 'Instagram']
         self.map_dict = {}
         self.data = {}
 
@@ -41,7 +38,7 @@ class SocialContentCreation:
             self.input_prompts.append(
                 (
                     system_text,
-                    f'Create 5 {key} text only posts from the content provided. Number each post.\n\n',
+                    f'Create 5 {key} text only posts from the content provided. Number each post and DO NOT start each post with "Post".\n\n',
                     key
                 )
             )
@@ -159,7 +156,7 @@ class SocialGenerations:
                     f"{form1}{ufb}{igram_suffix}Each post should be less than 180 characters. Number each post.\n\n",
                     "davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04",
                     100,
-                    3
+                    5
                 )
             )
             self.input_prompts.append(
