@@ -95,8 +95,8 @@ class SocialGenerations:
         self.action_verb = action_verb
         self.input_prompts = []
         self.result_dict = {
-            "davinci:ft-contentware:esl-generation-2023-04-21-16-37-03": [],            # 'email subject lines'
-            "davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04": [],   # 'Instagram'
+            "ft:davinci-002:contentware:esl-092123:81CNGSsg": [],            # 'email subject lines'   # model_change
+            "ft:davinci-002:contentware:igram-092223:81hC2bRN": [],   # 'Instagram'  # model_change
             "gpt-4-fb": [],      # Facebook Ads
             "gpt-4-li": [],      # LinkedIn Ads
             "gpt-4-eh": [],       # Email Headlines
@@ -154,7 +154,7 @@ class SocialGenerations:
             self.input_prompts.append(
                 (
                     f"{form1}{ufb}{igram_suffix}Each post should be less than 180 characters. Number each post.\n\n",
-                    "davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04",
+                    "ft:davinci-002:contentware:igram-092223:81hC2bRN",  # model_change
                     100,
                     5
                 )
@@ -162,7 +162,7 @@ class SocialGenerations:
             self.input_prompts.append(
                 (
                     f'{form1}{ufb}{esl_suffix}\n\n',
-                    "davinci:ft-contentware:esl-generation-2023-04-21-16-37-03",
+                    "ft:davinci-002:contentware:esl-092123:81CNGSsg",  # model_change
                     75,
                     3
                 )
@@ -337,14 +337,14 @@ def clean_gpt_list(output_array: list, model_name: str) -> list:
         crs = [r.strip('\n') for r in rs if r]
         frs = [clean_gpt_text(c.strip()) for c in crs if c]
         frs = [f.split('\n')[0] for f in frs]
-        if model_name == 'davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04"':
+        if model_name == 'ft:davinci-002:contentware:igram-092223:81hC2bRN"':  # model_change
             frs = [fr for fr in frs if re.search('[?.!]$', fr)]
         else:
             frs = frs[:-1]
         ufs = [remove_url(f) for f in frs]
         cleaned.extend(ufs)
-    if model_name == 'davinci:ft-contentware:email-cta-v2-2023-05-04-23-04-53':
-        cleaned = output_array
+    # if model_name == 'ft:davinci-002:contentware:esl-092123:81CNGSsg':  # model_change
+    #     cleaned = output_array
     cleaned = list(set(cleaned))
     return cleaned
 

@@ -103,8 +103,8 @@ def question_gpt_creations():
     logger.info('Creating OpenAI content')
     so_gen = SocialGenerations(snips, title, intro, promo, action_verb, promo_val)
     sog_results = so_gen.create_socials()
-    data['email_subject_lines'] = sog_results['davinci:ft-contentware:esl-generation-2023-04-21-16-37-03']
-    data['instagram_posts'] = sog_results['davinci:ft-contentware:instagram-generation-v2-2023-04-17-01-40-04']
+    data['email_subject_lines'] = sog_results['ft:davinci-002:contentware:esl-092123:81CNGSsg']
+    data['instagram_posts'] = sog_results['ft:davinci-002:contentware:igram-092223:81hC2bRN']
     data['facebook_ads'] = sog_results['gpt-4-fb']
     data['linkedin_ads'] = sog_results['gpt-4-li']
     data['email_headlines'] = sog_results['gpt-4-eh']
