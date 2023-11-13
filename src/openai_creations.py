@@ -105,6 +105,7 @@ class SocialGenerations:
         }
         self.ad_n_count = math.ceil(10 / len(self.chunked_snippets))
         self.promo_val = promo_val
+        # self.times = {}
 
     def create_socials(self):
         self.make_input_prompts()
@@ -224,10 +225,13 @@ class SocialGenerations:
                 self.result_dict[model].extend(clean_texts)
 
     def generate_chat_text(self, user_text, system_text, repetitions, model_id):
+        # ts = time.time()
         if model_id == 'gpt-4-buttons' or model_id == 'gpt-4-buttons2':
-            openai_model = 'gpt-4'
+            # openai_model = 'gpt-4'
+            openai_model = 'gpt-4-1106-preview'
         else:
             openai_model = 'gpt-3.5-turbo'
+            # openai_model = 'gpt-4-1106-preview'
         # openai_model = 'gpt-3.5-turbo'
         prompt_message = [
             {"role": "system", "content": system_text},
@@ -243,6 +247,8 @@ class SocialGenerations:
         except Exception as e:
             logger.info(e)
             final_response = [self.snippets]
+        # tdiff = time.time() - ts
+        # self.times[model_id] = tdiff
         return {
             'model': model_id,
             'result': final_response
@@ -391,7 +397,7 @@ def clean_headlines(email_headlines: list):
 
 def clean_buttons(cta_buttons: list) -> list:
     cleaned = []
-    if cta_buttons:
+    if cta_buttons and isinstance(cta_buttons, list):
         # print(cta_buttons)
         button_text = cta_buttons[0]
         split_buttons = button_text.split('\n')

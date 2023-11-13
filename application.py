@@ -103,6 +103,7 @@ def question_gpt_creations():
     logger.info('Creating OpenAI content')
     so_gen = SocialGenerations(snips, title, intro, promo, action_verb, promo_val)
     sog_results = so_gen.create_socials()
+    # data['times'] = times
     data['email_subject_lines'] = sog_results['ft:davinci-002:contentware:esl-092123:81CNGSsg']
     data['instagram_posts'] = sog_results['ft:davinci-002:contentware:igram-092223:81hC2bRN']
     data['facebook_ads'] = sog_results['gpt-4-fb']
