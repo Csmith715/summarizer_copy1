@@ -95,7 +95,7 @@ class SocialGenerations:
         self.action_verb = action_verb
         self.input_prompts = []
         self.result_dict = {
-            "ft:davinci-002:contentware:esl-092123:81CNGSsg": [],            # 'email subject lines'   # model_change
+            "ft:davinci-002:contentware:esl-092123:81CNGSsg": [],     # 'email subject lines'   # model_change
             "ft:davinci-002:contentware:igram-092223:81hC2bRN": [],   # 'Instagram'  # model_change
             "gpt-4-fb": [],      # Facebook Ads
             "gpt-4-li": [],      # LinkedIn Ads

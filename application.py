@@ -13,9 +13,41 @@ from src.gpt3_generations import GPT3Creations, NewGPT3Content
 from src.openai_creations import SocialGenerations, generate_chat_text, SocialContentCreation
 import random
 from nltk import word_tokenize
+import threading
+import openai
+import schedule
+from config import OPENAI_API_KEY
+
+openai.api_key = OPENAI_API_KEY
+
+class NoHealth(logging.Filter):
+    def filter(self, record):
+        return 'GET /healthz' not in record.getMessage()
+
 
 fileConfig('logging.conf')
 logger = logging.getLogger('root')
+logging.getLogger("werkzeug").addFilter(NoHealth())
+
+def ping_openai():
+    models = [
+        "ft:davinci-002:contentware:esl-092123:81CNGSsg",
+        "ft:davinci-002:contentware:igram-092223:81hC2bRN"
+    ]
+    for model in models:
+        response = openai.Completion.create(
+            engine=model,
+            prompt='This is a test prompt. Respond only with a single word response: "Yes"',
+            max_tokens=4,
+            n=1
+        )
+        texts = [c['text'] for c in response.choices]
+        logger.info(f'{model}\n\n{texts}')
+
+def run_ping():
+    schedule.every(6).hours.do(ping_openai)
+    while True:
+        schedule.run_pending()
 
 def page_not_found():
     return render_template('404.html'), 404
@@ -263,4 +295,5 @@ if __name__ == "__main__":
     debug = not os.getenv('LIVE', False)
     # load_model()
     # logger.info('Seq2Seq Model Loaded')
+    threading.Thread(target=run_ping).start()
     application.run(host=host, port=port, debug=debug)
