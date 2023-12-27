@@ -5,14 +5,11 @@ import os
 from itertools import product
 import json
 import pickle
-# import pandas as pd
 import logging
-# from sentence_transformers import SentenceTransformer
 
 bucket_name = os.getenv('BUCKET_NAME', 'contentware-nlp')
 logger = logging.getLogger()
 download_s3_folder(bucket_name, 'question-generation')
-# st_model = SentenceTransformer('all-MiniLM-L6-v2')
 
 rule_cats = [
     'CTA_Take Action (Long)',
@@ -31,15 +28,6 @@ rule_cats = [
     'CTA Day Before Reminder Long  (Social Card)',
     'CTA Day of  Reminder Long (Social Card)'
 ]
-
-# def make_cta_embeddings(rules: dict):
-#     cta_phraseologies = []
-#     for r in rule_cats:
-#         for k in rules.keys():
-#             values = [x[0] for x in rules[k][r]]
-#             cta_phraseologies.extend(values)
-#     cta_emb = st_model.encode(cta_phraseologies)
-#     return cta_emb
 
 def replace_tokens(dod: dict, event_type: str) -> dict:
     embedding_dict = {}
@@ -110,15 +98,6 @@ class ModelFuncs:
         # Load JSON CTA/Wrapper Info
         with open(os.path.join(self.crpath, self.cpath, 'campaign-metadata.json')) as f:
             rules = json.load(f)
-
-        # Create a dictionary of dataframes for each CTA
-        # dict_of_dfs = dict()
-        # for x in rules['ctas']:
-        #     temp_df = pd.DataFrame(x['phrases'])
-        #     if not temp_df.empty:
-        #         temp_df = temp_df.drop(['ctaId'], axis=1)
-        #         dict_of_dfs[x['categoryName']] = temp_df
-
         new_ph_dict = {}
         for r in rules['ctas']:
             for k, v in r['phrases'].items():
@@ -131,38 +110,7 @@ class ModelFuncs:
         categorized_rule_dict = {}
         for k, v in rules['bulletPoints'].items():
             categorized_rule_dict[k] = self.make_rule_dict(v)
-        # new_rule_dict = {}
-        # for r in rules['bulletPoints']:
-        #     bp = r['beforePositions']
-        #     full_list = list(product(*bp))
-        #     joined_list = [' '.join(f) + ' ' for f in full_list]
-        #     final_list = self.purge_extra(joined_list)
-        #     new_rule_dict[r['name']] = final_list
-        #
-        # new_rule_dict['HWW_Rules'] = new_rule_dict['How, What, Why, When, Which, Where Rule #1'] + new_rule_dict[
-        #     'How, What, Why, When, Which, Where Rule #2'] + new_rule_dict['How, What, Why, When, Which, Where Rule #3']
-        # new_rule_dict['Noun_Rules'] = new_rule_dict['Noun Rule #1'] + new_rule_dict['Noun Rule #2']
-        # del new_rule_dict['How, What, Why, When, Which, Where Rule #1']
-        # del new_rule_dict['How, What, Why, When, Which, Where Rule #2']
-        # del new_rule_dict['How, What, Why, When, Which, Where Rule #3']
-        # del new_rule_dict['Noun Rule #1']
-        # del new_rule_dict['Noun Rule #2']
 
-        # ptl = ['WEBINAR', 'EVENT', 'ONLINE_EVENT', 'VIRTUAL_EVENT', 'ONLINE_SESSION', 'CONFERENCE', 'SEMINAR',
-        #        'LECTURE', 'FREEFORM']
-
-        # categorized_rule_dict = rules['bulletPoints']
-        # categorized_rule_dict = {}
-        # for p in ptl:
-        #     categorized_rule_dict[p] = replace_rule_tokens(new_rule_dict, p.replace('_', ' '))
-
-        # event_dict = {}
-        # for p in ptl:
-        #     ed = replace_tokens(new_ph_dict, p.replace('_', ' '))
-        #     event_dict[p] = ed
-        # cta_embeddings = make_cta_embeddings(event_dict)
-        # with open(os.path.join(self.crpath, self.cpath, 'cta_embeddings.pkl'), 'wb') as fp:
-        #     pickle.dump(cta_embeddings, fp)
         with open(os.path.join(self.crpath, self.cpath, 'phraseology_embeddings.pkl'), 'wb') as fp:
             pickle.dump(new_ph_dict, fp)
         with open(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), 'w') as fp:
@@ -172,5 +120,3 @@ class ModelFuncs:
                        'CTA_Bullets/phraseology_embeddings.pkl')
         s3.upload_file(os.path.join(self.crpath, self.cpath, 'bullet_rules.json'), self.buck_name,
                        'CTA_Bullets/bullet_rules.json')
-        # s3.upload_file(os.path.join(self.crpath, self.cpath, 'cta_embeddings.pkl'), self.buck_name,
-        #                'CTA_Bullets/cta_embeddings.pkl')

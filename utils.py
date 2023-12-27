@@ -1,7 +1,6 @@
 import boto3
 import os
 import pathlib
-# import logging
 
 cta_root_path = os.getenv('CTA_ROOT_PATH', '/tmp')
 qg_root_path = os.getenv('QG_ROOT_PATH', '/tmp')
@@ -40,7 +39,4 @@ def download_file(path, file, bucket_name):
         os.makedirs(target_dir, exist_ok=True)
 
     return s3.download_file(bucket_name, f'{path}/{file}', f'{target_dir}/{file}')
-
-# def get_logger(name):
-#     return logging.getLogger("flask.app." + name)
 

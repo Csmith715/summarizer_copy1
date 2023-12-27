@@ -4,8 +4,6 @@ import os
 from models import ModelFuncs, bucket_name
 from utils import cta_path, cta_root_path  # qg_path, qg_root_path
 import logging
-# from simpletransformers.seq2seq import Seq2SeqModel
-# import torch
 from logging.config import fileConfig
 import blog
 from blog import MultilineGenerations
@@ -56,26 +54,6 @@ def page_not_found():
 application = flask.Flask(__name__)
 
 application.register_error_handler(404, page_not_found)
-# question_model = None
-# def load_model():
-#     global question_model
-#     if not question_model:
-#         try:
-#             logger.info("Loading Seq2Seq model")
-#             question_model = Seq2SeqModel(
-#                 encoder_decoder_type="bart",
-#                 encoder_decoder_name=os.path.join(qg_root_path, qg_path),
-#                 use_cuda=torch.cuda.is_available()
-#             )
-#         except Exception as e:
-#             # for local testing
-#             print(e)
-#             question_model = Seq2SeqModel(
-#                 encoder_decoder_type="bart",
-#                 encoder_decoder_name='/Users/micksmith/Contentware_Local_Models/question_generation',
-#                 use_cuda=torch.cuda.is_available()
-#             )
-#         logger.info('Question Model Loaded')
 
 @application.route('/summarizer', methods=['POST'])
 def summarizer():
@@ -89,7 +67,6 @@ def summarizer():
 
 @application.route('/summarizer/social-creations', methods=['POST'])
 def social_creations():
-    # data = {}
     req_data = None
     if flask.request.content_type == 'application/json':
         req_data = flask.request.get_json()
@@ -100,7 +77,6 @@ def social_creations():
     containers = req_data.get('containers', [])
     logger.info('Creating Social Media content')
     social_content = SocialContentCreation(title, description, keywords, containers)
-    # social_posts = social_content.make_social_creations()
     output = social_content.make_social_creations()
     logger.info('Social Content Created')
 
@@ -150,30 +126,6 @@ def question_gpt_creations():
     logger.info('Buttons, ESL, Instagram Posts, Short CTAs, & Headlines Created')
 
     return flask.jsonify(data)
-
-
-# @application.route('/summarizer/generatequestions', methods=['POST'])
-# def generatequestions():
-#     """
-#     Parameters: {
-#             text (list): An array of snippets for question generation,
-#             email_cta_prompt (str): A string to be passed to an OpenAI call
-#             }
-#     Returns: {
-#         generated question (list): An array of questions created using a Simple Transformer model,
-#         email_ctas (list): An array of email call to action texts
-#         }
-#     """
-#     data = {}
-#     req_data = None
-#     if flask.request.content_type == 'application/json':
-#         req_data = flask.request.get_json()
-#     inputtext = req_data.get('text', '')
-#     logger.info('Generating Questions')
-#     data['generated question'] = question_model.predict(inputtext)
-#     logger.info('Questions Created')
-#
-#     return flask.jsonify(data)
 
 @application.route('/summarizer/updateCTA', methods=['GET'])
 def updatecta():
@@ -293,7 +245,5 @@ if __name__ == "__main__":
     port = os.getenv('FLASK_PORT', 5000)
     host = os.getenv('FLASK_HOST', None)
     debug = not os.getenv('LIVE', False)
-    # load_model()
-    # logger.info('Seq2Seq Model Loaded')
     threading.Thread(target=run_ping).start()
     application.run(host=host, port=port, debug=debug)

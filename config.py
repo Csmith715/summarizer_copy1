@@ -3,7 +3,8 @@ import re
 # OPEN API STUFF
 OPENAI_API_KEY = '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'
 
-url_string = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+url_string = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{" \
+             r"};:'\".,<>?«»“”‘’])) "
 emoji_pattern = re.compile("["
                            u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
                            u"\U0001F300-\U0001F5FF"  # symbols & pictographs
