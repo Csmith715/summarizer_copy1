@@ -13,7 +13,8 @@ vowels = ['a', 'e', 'i', 'o', 'u']
 def write_blog(topic: str, keywords: str):
     prompt = f'Write a long detailed blog about:\n{topic}\nKeywords:\n{keywords}\n\n\n'
     response = openai.Completion.create(
-        engine="davinci-instruct-beta-v3",
+        # engine="davinci-instruct-beta-v3",
+        model='gpt-3.5-turbo-instruct',
         prompt=prompt,
         temperature=0.7,
         max_tokens=650,
@@ -31,7 +32,8 @@ def create_bullet_list(title: str, introduction: str) -> str:
     # n is set to 5 to create 5 outputs
     text = f'{title}\n{introduction}'
     response = openai.Completion.create(
-        model='curie:ft-contentware-2022-10-04-15-51-24',
+        # model='curie:ft-contentware-2022-10-04-15-51-24',
+        model='davinci-002',
         prompt=f"{text}\n\nA concise learning objective:\n\n",
         n=5,
         temperature=0.7,
@@ -61,7 +63,8 @@ def social_media_prompt(channel: str, title: str, keywords: str):
     text = f'{title}\nKeywords: {keywords}'
     response = openai.Completion.create(
         # model='curie:ft-contentware-2022-06-01-19-09-59',
-        engine="davinci-instruct-beta-v3",
+        # engine="davinci-instruct-beta-v3",
+        model='gpt-3.5-turbo-instruct',
         prompt=f"Write a {channel} post based on the following content:\n\n{text}\n\n",
         n=10,
         temperature=0.5,
@@ -81,7 +84,8 @@ def social_media_prompt(channel: str, title: str, keywords: str):
 def write_introduction(event_type: str, title: str, keywords: str):
     prompt = f'Write an introduction summary about this {event_type}:\nTitle: {title}\nKeywords:\n{keywords}\n\n\n'
     response = openai.Completion.create(
-        engine="davinci-instruct-beta-v3",
+        # engine="davinci-instruct-beta-v3",
+        model='gpt-3.5-turbo-instruct',
         prompt=prompt,
         temperature=0.7,
         max_tokens=200,
@@ -126,7 +130,8 @@ class GPT3Creations:
 
     def generate_blog_topics(self, topic, keywords):
         response = openai.Completion.create(
-            engine="text-davinci-003",
+            # engine="davinci-instruct-beta-v3",
+            model='gpt-3.5-turbo-instruct',
             prompt=f'Create an interesting blog title about:\n{topic}\nKeywords:\n{keywords}\n\n',
             temperature=1,
             max_tokens=25,
@@ -145,7 +150,8 @@ class GPT3Creations:
 
     def write_email_subject_lines(self, email_body, keywords=None):
         response = openai.Completion.create(
-            model="text-davinci-003",
+            # engine="davinci-instruct-beta-v3",
+            model='gpt-3.5-turbo-instruct',
             prompt=f"Create an email subject line for the following email:\n\n{email_body}\n\n",
             temperature=1,
             max_tokens=25,
@@ -183,7 +189,8 @@ class GPT3Creations:
 def expand_blog_topics(selected_topic, topic, keywords, number_of_topics=10):
     num = str(number_of_topics+1)
     response = openai.Completion.create(
-        model="text-davinci-003",
+        # engine="davinci-instruct-beta-v3",
+        model='gpt-3.5-turbo-instruct',
         prompt=f"Create an interesting blog title about:\n{topic}\nKeywords:\n{keywords}\n\n1. ",
         suffix=f"\n{num}. {selected_topic}\n\n\n",
         temperature=0.78,
@@ -197,7 +204,8 @@ def expand_blog_topics(selected_topic, topic, keywords, number_of_topics=10):
 def expand_email_sl_topics(selected_topic, email_body, number_of_topics=10):
     num = str(number_of_topics+1)
     response = openai.Completion.create(
-        model="text-davinci-003",
+        # engine="davinci-instruct-beta-v3",
+        model='gpt-3.5-turbo-instruct',
         prompt=f"Create a list of email subject lines for the following email:\n\n{email_body}\n\n1.",
         suffix=f"\n{num}. {selected_topic}\n\n\n",
         temperature=0.78,
@@ -259,7 +267,8 @@ class NewGPT3Content:
 
     def write_social_media(self) -> list:
         response = openai.Completion.create(
-            model="text-davinci-003",
+            # engine="davinci-instruct-beta-v3",
+            model='gpt-3.5-turbo-instruct',
             prompt=self.final_prompt,
             temperature=0.7,
             max_tokens=256,
